@@ -1,0 +1,85 @@
+{
+    "meta": {
+      "tool": { "name": "AICR", "version": "0.1.0" },
+      "run_id": "aicr_2025-12-25_0001",
+      "created_at": "2025-12-25T10:30:00+03:00",
+      "repo": {
+        "name": "flutter-aicr",
+        "remote_url": "https://github.com/USER/flutter-aicr",
+        "default_branch": "main"
+      },
+      "git": {
+        "base_ref": "main",
+        "head_ref": "feature/demo",
+        "base_sha": "BASE_SHA",
+        "head_sha": "HEAD_SHA"
+      },
+      "input": {
+        "diff_type": "git_diff",
+        "diff_hash": "sha256:example",
+        "file_count": 3
+      },
+      "ai": {
+        "enabled": false,
+        "provider": "openai",
+        "model": "gpt-5-mini",
+        "token_budget": 20000
+      }
+    },
+    "summary": {
+      "status": "warn",
+      "rule_results": { "pass": 7, "warn": 3, "fail": 0 },
+      "contract_results": { "pass": 1, "warn": 0, "fail": 0 },
+      "file_findings": { "info": 2, "warn": 1, "error": 0 }
+    },
+    "rules": [
+      {
+        "rule_id": "bloc_change_requires_tests",
+        "status": "warn",
+        "title": "BLoC değişiklikleri için test bekleniyor",
+        "message": {
+          "tr": "BLoC dosyalarında değişiklik var ancak karşılık gelen test değişimi tespit edilmedi.",
+          "en": "BLoC files changed but no corresponding test change was detected."
+        },
+        "evidence": [
+          { "file_path": "lib/features/foo/presentation/bloc/foo_bloc.dart", "line_start": 1, "line_end": 120 }
+        ]
+      }
+    ],
+    "contracts": [
+      {
+        "endpoint_id": "get_transactions_v1",
+        "method": "GET",
+        "path": "/v1/transactions",
+        "status": "pass",
+        "message": {
+          "tr": "Contract uyumu tespit edildi.",
+          "en": "Contract alignment detected."
+        },
+        "diff": { "missing_fields": [], "extra_fields": [], "required_mismatches": [] }
+      }
+    ],
+    "files": [
+      {
+        "file_path": "lib/features/foo/presentation/pages/foo_page.dart",
+        "severity": "warn",
+        "message": {
+          "tr": "UI içinde hardcoded kullanıcı metni olabileceği tespit edildi (heuristic).",
+          "en": "Potential hardcoded user-facing string detected (heuristic)."
+        },
+        "locations": [{ "line": 42, "column": 12 }],
+        "tags": ["l10n", "heuristic"]
+      }
+    ],
+    "recommendations": [
+      {
+        "title": "Test ekleyin",
+        "message": {
+          "tr": "BLoC değişiklikleri için en az bir unit test senaryosu ekleyin.",
+          "en": "Add at least one unit test scenario for the BLoC change."
+        },
+        "related_rule_ids": ["bloc_change_requires_tests"]
+      }
+    ]
+  }
+  

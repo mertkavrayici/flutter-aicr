@@ -1,0 +1,257 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/schemas/aicr_report.schema.json",
+    "title": "AICR Report Schema",
+    "type": "object",
+    "required": ["meta", "summary", "rules", "contracts", "files"],
+    "additionalProperties": false,
+    "properties": {
+      "meta": {
+        "type": "object",
+        "required": ["tool", "run_id", "created_at"],
+        "additionalProperties": false,
+        "properties": {
+          "tool": {
+            "type": "object",
+            "required": ["name", "version"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "const": "AICR" },
+              "version": { "type": "string" }
+            }
+          },
+          "run_id": { "type": "string", "description": "Unique ID for this analysis run." },
+          "created_at": { "type": "string", "format": "date-time" },
+  
+          "repo": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "remote_url": { "type": "string" },
+              "default_branch": { "type": "string" }
+            }
+          },
+  
+          "git": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "base_ref": { "type": "string" },
+              "head_ref": { "type": "string" },
+              "base_sha": { "type": "string" },
+              "head_sha": { "type": "string" }
+            }
+          },
+  
+          "input": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "diff_type": { "type": "string", "enum": ["git_diff", "file_list"] },
+              "diff_hash": { "type": "string" },
+              "file_count": { "type": "integer", "minimum": 0 }
+            }
+          },
+  
+          "ai": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "provider": { "type": "string" },
+              "model": { "type": "string" },
+              "token_budget": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      },
+  
+      "summary": {
+        "type": "object",
+        "required": ["status", "rule_results", "contract_results", "file_findings"],
+        "additionalProperties": false,
+        "properties": {
+          "status": { "type": "string", "enum": ["pass", "warn", "fail"] },
+          "rule_results": {
+            "type": "object",
+            "required": ["pass", "warn", "fail"],
+            "additionalProperties": false,
+            "properties": {
+              "pass": { "type": "integer", "minimum": 0 },
+              "warn": { "type": "integer", "minimum": 0 },
+              "fail": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "contract_results": {
+            "type": "object",
+            "required": ["pass", "warn", "fail"],
+            "additionalProperties": false,
+            "properties": {
+              "pass": { "type": "integer", "minimum": 0 },
+              "warn": { "type": "integer", "minimum": 0 },
+              "fail": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "file_findings": {
+            "type": "object",
+            "required": ["info", "warn", "error"],
+            "additionalProperties": false,
+            "properties": {
+              "info": { "type": "integer", "minimum": 0 },
+              "warn": { "type": "integer", "minimum": 0 },
+              "error": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      },
+  
+      "rules": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/rule_result" }
+      },
+  
+      "contracts": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/contract_result" }
+      },
+  
+      "files": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/file_finding" }
+      },
+  
+      "recommendations": {
+        "type": "array",
+        "description": "Optional, may be populated by LLM assist (non-authoritative).",
+        "items": { "$ref": "#/$defs/recommendation" }
+      }
+    },
+  
+    "$defs": {
+      "rule_result": {
+        "type": "object",
+        "required": ["rule_id", "status", "title", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "rule_id": { "type": "string" },
+          "status": { "type": "string", "enum": ["pass", "warn", "fail"] },
+          "title": { "type": "string" },
+  
+          "message": {
+            "type": "object",
+            "required": ["tr", "en"],
+            "additionalProperties": false,
+            "properties": {
+              "tr": { "type": "string" },
+              "en": { "type": "string" }
+            }
+          },
+  
+          "evidence": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/evidence_item" }
+          }
+        }
+      },
+  
+      "contract_result": {
+        "type": "object",
+        "required": ["endpoint_id", "status", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "endpoint_id": { "type": "string" },
+          "method": { "type": "string" },
+          "path": { "type": "string" },
+          "status": { "type": "string", "enum": ["pass", "warn", "fail"] },
+          "message": {
+            "type": "object",
+            "required": ["tr", "en"],
+            "additionalProperties": false,
+            "properties": {
+              "tr": { "type": "string" },
+              "en": { "type": "string" }
+            }
+          },
+          "diff": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "missing_fields": { "type": "array", "items": { "type": "string" } },
+              "extra_fields": { "type": "array", "items": { "type": "string" } },
+              "required_mismatches": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      },
+  
+      "file_finding": {
+        "type": "object",
+        "required": ["file_path", "severity", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "file_path": { "type": "string" },
+          "severity": { "type": "string", "enum": ["info", "warn", "error"] },
+          "message": {
+            "type": "object",
+            "required": ["tr", "en"],
+            "additionalProperties": false,
+            "properties": {
+              "tr": { "type": "string" },
+              "en": { "type": "string" }
+            }
+          },
+          "locations": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/location" }
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+  
+      "recommendation": {
+        "type": "object",
+        "required": ["title", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "title": { "type": "string" },
+          "message": {
+            "type": "object",
+            "required": ["tr", "en"],
+            "additionalProperties": false,
+            "properties": {
+              "tr": { "type": "string" },
+              "en": { "type": "string" }
+            }
+          },
+          "related_rule_ids": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+  
+      "evidence_item": {
+        "type": "object",
+        "required": ["file_path"],
+        "additionalProperties": false,
+        "properties": {
+          "file_path": { "type": "string" },
+          "line_start": { "type": "integer", "minimum": 1 },
+          "line_end": { "type": "integer", "minimum": 1 },
+          "snippet": { "type": "string" }
+        }
+      },
+  
+      "location": {
+        "type": "object",
+        "required": ["line"],
+        "additionalProperties": false,
+        "properties": {
+          "line": { "type": "integer", "minimum": 1 },
+          "column": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+  
