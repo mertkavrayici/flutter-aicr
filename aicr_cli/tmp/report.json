@@ -1,149 +1,54 @@
-{
-  "meta": {
-    "tool": {
-      "name": "AICR",
-      "version": "0.1.0"
-    },
-    "run_id": "aicr_1766993610262",
-    "created_at": "2025-12-29T10:33:30.260110",
-    "repo": {
-      "name": "flutter-aicr"
-    },
-    "input": {
-      "diff_type": "git_diff",
-      "diff_hash": "sha256:a5254a268fad86e46a9f11c5848164fe425e0161527714fe33697e6d43b00e0a",
-      "file_count": 7
-    },
-    "ai": {
-      "enabled": false
-    }
-  },
-  "summary": {
-    "status": "warn",
-    "rule_results": {
-      "pass": 1,
-      "warn": 2,
-      "fail": 0
-    },
-    "contract_results": {
-      "pass": 0,
-      "warn": 0,
-      "fail": 0
-    },
-    "file_findings": {
-      "info": 0,
-      "warn": 0,
-      "error": 0
-    }
-  },
-  "rules": [
-    {
-      "rule_id": "bloc_change_requires_tests",
-      "status": "warn",
-      "title": "BLoC changes should include tests",
-      "message": {
-        "tr": "BLoC dosyalarında değişiklik var ancak test değişikliği tespit edilmedi.",
-        "en": "BLoC files changed but no test change was detected."
-      },
-      "evidence": [
-        {
-          "file_path": "lib/features/dashboard/presentation/bloc/dashboard_bloc.dart"
-        }
-      ]
-    },
-    {
-      "rule_id": "large_change_set",
-      "status": "pass",
-      "title": "Large change set might be hard to review",
-      "message": {
-        "tr": "Değişen dosya sayısı makul görünüyor.",
-        "en": "Changed file count looks reasonable."
-      },
-      "evidence": []
-    },
-    {
-      "rule_id": "ui_change_suggests_golden_tests",
-      "status": "warn",
-      "title": "UI changes may benefit from golden tests",
-      "message": {
-        "tr": "UI bileşenlerinde değişiklik var. Golden test veya widget test ile kritik ekranları sabitlemeyi düşünebilirsin.",
-        "en": "UI components changed. Consider adding golden/widget tests to lock down critical screens."
-      },
-      "evidence": [
-        {
-          "file_path": "lib/features/dashboard/presentation/bloc/dashboard_bloc.dart"
-        },
-        {
-          "file_path": "lib/features/dashboard/presentation/components/dashboard_header.dart"
-        },
-        {
-          "file_path": "lib/features/dashboard/presentation/components/dashboard_shell.dart"
-        },
-        {
-          "file_path": "lib/features/dashboard/presentation/components/summary_stat_card.dart"
-        },
-        {
-          "file_path": "lib/features/dashboard/presentation/pages/dashboard_page.dart"
-        }
-      ]
-    }
-  ],
-  "findings": [
-    {
-      "id": "bloc_change_requires_tests:933da9466836",
-      "category": "testing",
-      "severity": "warning",
-      "title": "BLoC changes should include tests",
-      "message": {
-        "tr": "BLoC dosyalarında değişiklik var ancak test değişikliği tespit edilmedi.",
-        "en": "BLoC files changed but no test change was detected."
-      },
-      "file_path": "lib/features/dashboard/presentation/bloc/dashboard_bloc.dart",
-      "source_id": "bloc_change_requires_tests"
-    },
-    {
-      "id": "ui_change_suggests_golden_tests:11dba7d07b55",
-      "category": "quality",
-      "severity": "suggestion",
-      "title": "UI changes may benefit from golden tests",
-      "message": {
-        "tr": "UI bileşenlerinde değişiklik var. Golden test veya widget test ile kritik ekranları sabitlemeyi düşünebilirsin.",
-        "en": "UI components changed. Consider adding golden/widget tests to lock down critical screens."
-      },
-      "file_path": "lib/features/dashboard/presentation/bloc/dashboard_bloc.dart",
-      "source_id": "ui_change_suggests_golden_tests"
-    }
-  ],
-  "contracts": [],
-  "files": [
-    {
-      "path": "lib/features/dashboard/domain/use_cases/get_dashboard_summary_uc.dart",
-      "change_type": "modified"
-    },
-    {
-      "path": "lib/features/dashboard/presentation/bloc/dashboard_bloc.dart",
-      "change_type": "modified"
-    },
-    {
-      "path": "lib/features/dashboard/presentation/components/dashboard_header.dart",
-      "change_type": "modified"
-    },
-    {
-      "path": "lib/features/dashboard/presentation/components/dashboard_shell.dart",
-      "change_type": "modified"
-    },
-    {
-      "path": "lib/features/dashboard/presentation/components/summary_stat_card.dart",
-      "change_type": "modified"
-    },
-    {
-      "path": "lib/features/dashboard/presentation/pages/dashboard_page.dart",
-      "change_type": "modified"
-    },
-    {
-      "path": "lib/features/transactions/data/seeding/transaction_seeder.dart",
-      "change_type": "modified"
-    }
-  ],
-  "recommendations": []
-}
+## AICR — WARN
+
+**Repo:** budgetment · **Run:** aicr_176707893 · **Files:** 75 · **AI:** OFF · **Diff:** `sha256:4c3c2`
+
+**Risk level:** 🟡 **Medium** · **Overall confidence:** N/A
+
+| Signal | Pass | Warn | Fail |
+| --- | --- | --- | --- |
+| Deterministic | 2 | 5 | 0 |
+| AI (findings) | - | 0 | - |
+
+### Review recommended
+
+🟨 **Recommended** — warnings detected with high severity or confidence.
+
+### Top actions
+
+- **High-entropy secret/token pattern detected** — Risk: Secret/token exposure risk. High-entropy string or token pattern detected.
+Reason: Diff contains 20+ character high-entropy string or AWS key/JWT token/base64-like pattern. This may be a secret/token.
+Suggested action: Verify nothing is hardcoded and nothing leaks to logs. Move secrets to environment variables or secure storage. If it's test data, use mock/placeholder.
+- **Possible architecture layer violation** — Violation direction: presentation -> domain, core -> feature
+
+Why this rule exists: Multiple architecture layer violations detected. Clean Architecture controls inter-layer dependencies to improve code maintainability and testability. Layer violations cause tight coupling and ripple effects when making changes.
+
+What to do: According to Clean Architecture principles, presentation layer can depend on domain layer, but this should typically be through domain abstractions like use cases or entities. Direct dependency on domain implementations may violate architectural boundaries.
+- **Large diff might be risky to review/performance** — Diff is large (+2245/-2627, total 4872 lines). Splitting into smaller PRs may improve review quality and risk management.
+- **Large change set might be hard to review** — High number of changed files (75). Splitting into smaller PRs may improve review quality.
+- **UI changes may benefit from golden tests** — UI components changed. Consider adding golden/widget tests to lock down critical screens.
+
+### All findings
+
+**quality**
+
+- `warning` **High-entropy secret/token pattern detected** — Risk: Secret/token exposure risk. High-entropy string or token pattern detected.
+Reason: Diff contains 20+ character high-entropy string or AWS key/JWT token/base64-like pattern. This may be a secret/token.
+Suggested action: Verify nothing is hardcoded and nothing leaks to logs. Move secrets to environment variables or secure storage. If it's test data, use mock/placeholder.
+- `suggestion` **UI changes may benefit from golden tests** — UI components changed. Consider adding golden/widget tests to lock down critical screens.
+
+**dx**
+
+- `suggestion` **Large change set might be hard to review** — High number of changed files (75). Splitting into smaller PRs may improve review quality.
+
+**architecture**
+
+- `warning` **Possible architecture layer violation** — Violation direction: presentation -> domain, core -> feature
+
+Why this rule exists: Multiple architecture layer violations detected. Clean Architecture controls inter-layer dependencies to improve code maintainability and testability. Layer violations cause tight coupling and ripple effects when making changes.
+
+What to do: According to Clean Architecture principles, presentation layer can depend on domain layer, but this should typically be through domain abstractions like use cases or entities. Direct dependency on domain implementations may violate architectural boundaries.
+
+**performance**
+
+- `warning` **Large diff might be risky to review/performance** — Diff is large (+2245/-2627, total 4872 lines). Splitting into smaller PRs may improve review quality and risk management.
+

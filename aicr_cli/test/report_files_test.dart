@@ -9,7 +9,12 @@ void main() {
       diffText: 'diff',
       aiEnabled: false,
       ruleResults: const [],
-      files: [FileEntry.fromStringChangeType(path: 'lib/main.dart', changeType: 'modified')],
+      files: [
+        FileEntry.fromStringChangeType(
+          path: 'lib/main.dart',
+          changeType: 'modified',
+        ),
+      ],
     );
 
     final report = builder.build();

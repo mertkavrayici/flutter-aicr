@@ -18,6 +18,10 @@ AicrFindingDto _$AicrFindingDtoFromJson(Map<String, dynamic> json) =>
       lineEnd: (json['line_end'] as num?)?.toInt(),
       sourceId: json['source_id'] as String?,
       confidence: (json['confidence'] as num?)?.toDouble(),
+      area: json['area'] as String?,
+      risk: json['risk'] as String?,
+      reason: json['reason'] as String?,
+      suggestedAction: json['suggested_action'] as String?,
     );
 
 Map<String, dynamic> _$AicrFindingDtoToJson(AicrFindingDto instance) =>
@@ -32,6 +36,10 @@ Map<String, dynamic> _$AicrFindingDtoToJson(AicrFindingDto instance) =>
       if (instance.lineEnd case final value?) 'line_end': value,
       if (instance.sourceId case final value?) 'source_id': value,
       if (instance.confidence case final value?) 'confidence': value,
+      if (instance.area case final value?) 'area': value,
+      if (instance.risk case final value?) 'risk': value,
+      if (instance.reason case final value?) 'reason': value,
+      if (instance.suggestedAction case final value?) 'suggested_action': value,
     };
 
 const _$AicrCategoryEnumMap = {

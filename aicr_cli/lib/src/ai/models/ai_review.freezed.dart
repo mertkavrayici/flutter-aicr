@@ -25,7 +25,13 @@ mixin _$AiReviewHighlight {
   String get title => throw _privateConstructorUsedError;
   String get detail => throw _privateConstructorUsedError;
   @JsonKey(name: 'rule_id')
-  String? get ruleId => throw _privateConstructorUsedError;
+  String? get ruleId => throw _privateConstructorUsedError; // AI finding structured fields
+  String? get area => throw _privateConstructorUsedError;
+  String? get risk => throw _privateConstructorUsedError;
+  String? get reason => throw _privateConstructorUsedError;
+  @JsonKey(name: 'suggested_action')
+  String? get suggestedAction => throw _privateConstructorUsedError;
+  double? get confidence => throw _privateConstructorUsedError;
 
   /// Serializes this AiReviewHighlight to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,6 +55,11 @@ abstract class $AiReviewHighlightCopyWith<$Res> {
     String title,
     String detail,
     @JsonKey(name: 'rule_id') String? ruleId,
+    String? area,
+    String? risk,
+    String? reason,
+    @JsonKey(name: 'suggested_action') String? suggestedAction,
+    double? confidence,
   });
 }
 
@@ -71,6 +82,11 @@ class _$AiReviewHighlightCopyWithImpl<$Res, $Val extends AiReviewHighlight>
     Object? title = null,
     Object? detail = null,
     Object? ruleId = freezed,
+    Object? area = freezed,
+    Object? risk = freezed,
+    Object? reason = freezed,
+    Object? suggestedAction = freezed,
+    Object? confidence = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -90,6 +106,26 @@ class _$AiReviewHighlightCopyWithImpl<$Res, $Val extends AiReviewHighlight>
                 ? _value.ruleId
                 : ruleId // ignore: cast_nullable_to_non_nullable
                       as String?,
+            area: freezed == area
+                ? _value.area
+                : area // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            risk: freezed == risk
+                ? _value.risk
+                : risk // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            reason: freezed == reason
+                ? _value.reason
+                : reason // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            suggestedAction: freezed == suggestedAction
+                ? _value.suggestedAction
+                : suggestedAction // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            confidence: freezed == confidence
+                ? _value.confidence
+                : confidence // ignore: cast_nullable_to_non_nullable
+                      as double?,
           )
           as $Val,
     );
@@ -110,6 +146,11 @@ abstract class _$$AiReviewHighlightImplCopyWith<$Res>
     String title,
     String detail,
     @JsonKey(name: 'rule_id') String? ruleId,
+    String? area,
+    String? risk,
+    String? reason,
+    @JsonKey(name: 'suggested_action') String? suggestedAction,
+    double? confidence,
   });
 }
 
@@ -131,6 +172,11 @@ class __$$AiReviewHighlightImplCopyWithImpl<$Res>
     Object? title = null,
     Object? detail = null,
     Object? ruleId = freezed,
+    Object? area = freezed,
+    Object? risk = freezed,
+    Object? reason = freezed,
+    Object? suggestedAction = freezed,
+    Object? confidence = freezed,
   }) {
     return _then(
       _$AiReviewHighlightImpl(
@@ -150,6 +196,26 @@ class __$$AiReviewHighlightImplCopyWithImpl<$Res>
             ? _value.ruleId
             : ruleId // ignore: cast_nullable_to_non_nullable
                   as String?,
+        area: freezed == area
+            ? _value.area
+            : area // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        risk: freezed == risk
+            ? _value.risk
+            : risk // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        reason: freezed == reason
+            ? _value.reason
+            : reason // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        suggestedAction: freezed == suggestedAction
+            ? _value.suggestedAction
+            : suggestedAction // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        confidence: freezed == confidence
+            ? _value.confidence
+            : confidence // ignore: cast_nullable_to_non_nullable
+                  as double?,
       ),
     );
   }
@@ -163,6 +229,11 @@ class _$AiReviewHighlightImpl implements _AiReviewHighlight {
     required this.title,
     required this.detail,
     @JsonKey(name: 'rule_id') this.ruleId,
+    this.area,
+    this.risk,
+    this.reason,
+    @JsonKey(name: 'suggested_action') this.suggestedAction,
+    this.confidence,
   });
 
   factory _$AiReviewHighlightImpl.fromJson(Map<String, dynamic> json) =>
@@ -177,10 +248,22 @@ class _$AiReviewHighlightImpl implements _AiReviewHighlight {
   @override
   @JsonKey(name: 'rule_id')
   final String? ruleId;
+  // AI finding structured fields
+  @override
+  final String? area;
+  @override
+  final String? risk;
+  @override
+  final String? reason;
+  @override
+  @JsonKey(name: 'suggested_action')
+  final String? suggestedAction;
+  @override
+  final double? confidence;
 
   @override
   String toString() {
-    return 'AiReviewHighlight(severity: $severity, title: $title, detail: $detail, ruleId: $ruleId)';
+    return 'AiReviewHighlight(severity: $severity, title: $title, detail: $detail, ruleId: $ruleId, area: $area, risk: $risk, reason: $reason, suggestedAction: $suggestedAction, confidence: $confidence)';
   }
 
   @override
@@ -192,12 +275,30 @@ class _$AiReviewHighlightImpl implements _AiReviewHighlight {
                 other.severity == severity) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.detail, detail) || other.detail == detail) &&
-            (identical(other.ruleId, ruleId) || other.ruleId == ruleId));
+            (identical(other.ruleId, ruleId) || other.ruleId == ruleId) &&
+            (identical(other.area, area) || other.area == area) &&
+            (identical(other.risk, risk) || other.risk == risk) &&
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.suggestedAction, suggestedAction) ||
+                other.suggestedAction == suggestedAction) &&
+            (identical(other.confidence, confidence) ||
+                other.confidence == confidence));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, severity, title, detail, ruleId);
+  int get hashCode => Object.hash(
+    runtimeType,
+    severity,
+    title,
+    detail,
+    ruleId,
+    area,
+    risk,
+    reason,
+    suggestedAction,
+    confidence,
+  );
 
   /// Create a copy of AiReviewHighlight
   /// with the given fields replaced by the non-null parameter values.
@@ -222,6 +323,11 @@ abstract class _AiReviewHighlight implements AiReviewHighlight {
     required final String title,
     required final String detail,
     @JsonKey(name: 'rule_id') final String? ruleId,
+    final String? area,
+    final String? risk,
+    final String? reason,
+    @JsonKey(name: 'suggested_action') final String? suggestedAction,
+    final double? confidence,
   }) = _$AiReviewHighlightImpl;
 
   factory _AiReviewHighlight.fromJson(Map<String, dynamic> json) =
@@ -235,7 +341,18 @@ abstract class _AiReviewHighlight implements AiReviewHighlight {
   String get detail;
   @override
   @JsonKey(name: 'rule_id')
-  String? get ruleId;
+  String? get ruleId; // AI finding structured fields
+  @override
+  String? get area;
+  @override
+  String? get risk;
+  @override
+  String? get reason;
+  @override
+  @JsonKey(name: 'suggested_action')
+  String? get suggestedAction;
+  @override
+  double? get confidence;
 
   /// Create a copy of AiReviewHighlight
   /// with the given fields replaced by the non-null parameter values.

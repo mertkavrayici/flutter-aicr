@@ -29,7 +29,12 @@ mixin _$AicrFinding {
   int? get lineStart => throw _privateConstructorUsedError;
   int? get lineEnd => throw _privateConstructorUsedError;
   String? get sourceId => throw _privateConstructorUsedError;
-  double? get confidence => throw _privateConstructorUsedError;
+  double? get confidence =>
+      throw _privateConstructorUsedError; // AI finding structured fields
+  String? get area => throw _privateConstructorUsedError;
+  String? get risk => throw _privateConstructorUsedError;
+  String? get reason => throw _privateConstructorUsedError;
+  String? get suggestedAction => throw _privateConstructorUsedError;
 
   /// Create a copy of AicrFinding
   /// with the given fields replaced by the non-null parameter values.
@@ -57,6 +62,10 @@ abstract class $AicrFindingCopyWith<$Res> {
     int? lineEnd,
     String? sourceId,
     double? confidence,
+    String? area,
+    String? risk,
+    String? reason,
+    String? suggestedAction,
   });
 }
 
@@ -86,6 +95,10 @@ class _$AicrFindingCopyWithImpl<$Res, $Val extends AicrFinding>
     Object? lineEnd = freezed,
     Object? sourceId = freezed,
     Object? confidence = freezed,
+    Object? area = freezed,
+    Object? risk = freezed,
+    Object? reason = freezed,
+    Object? suggestedAction = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -133,6 +146,22 @@ class _$AicrFindingCopyWithImpl<$Res, $Val extends AicrFinding>
                 ? _value.confidence
                 : confidence // ignore: cast_nullable_to_non_nullable
                       as double?,
+            area: freezed == area
+                ? _value.area
+                : area // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            risk: freezed == risk
+                ? _value.risk
+                : risk // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            reason: freezed == reason
+                ? _value.reason
+                : reason // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            suggestedAction: freezed == suggestedAction
+                ? _value.suggestedAction
+                : suggestedAction // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -160,6 +189,10 @@ abstract class _$$AicrFindingImplCopyWith<$Res>
     int? lineEnd,
     String? sourceId,
     double? confidence,
+    String? area,
+    String? risk,
+    String? reason,
+    String? suggestedAction,
   });
 }
 
@@ -188,6 +221,10 @@ class __$$AicrFindingImplCopyWithImpl<$Res>
     Object? lineEnd = freezed,
     Object? sourceId = freezed,
     Object? confidence = freezed,
+    Object? area = freezed,
+    Object? risk = freezed,
+    Object? reason = freezed,
+    Object? suggestedAction = freezed,
   }) {
     return _then(
       _$AicrFindingImpl(
@@ -235,6 +272,22 @@ class __$$AicrFindingImplCopyWithImpl<$Res>
             ? _value.confidence
             : confidence // ignore: cast_nullable_to_non_nullable
                   as double?,
+        area: freezed == area
+            ? _value.area
+            : area // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        risk: freezed == risk
+            ? _value.risk
+            : risk // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        reason: freezed == reason
+            ? _value.reason
+            : reason // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        suggestedAction: freezed == suggestedAction
+            ? _value.suggestedAction
+            : suggestedAction // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -255,6 +308,10 @@ class _$AicrFindingImpl extends _AicrFinding {
     this.lineEnd,
     this.sourceId,
     this.confidence,
+    this.area,
+    this.risk,
+    this.reason,
+    this.suggestedAction,
   }) : super._();
 
   @override
@@ -281,10 +338,19 @@ class _$AicrFindingImpl extends _AicrFinding {
   final String? sourceId;
   @override
   final double? confidence;
+  // AI finding structured fields
+  @override
+  final String? area;
+  @override
+  final String? risk;
+  @override
+  final String? reason;
+  @override
+  final String? suggestedAction;
 
   @override
   String toString() {
-    return 'AicrFinding(id: $id, category: $category, severity: $severity, title: $title, messageTr: $messageTr, messageEn: $messageEn, filePath: $filePath, lineStart: $lineStart, lineEnd: $lineEnd, sourceId: $sourceId, confidence: $confidence)';
+    return 'AicrFinding(id: $id, category: $category, severity: $severity, title: $title, messageTr: $messageTr, messageEn: $messageEn, filePath: $filePath, lineStart: $lineStart, lineEnd: $lineEnd, sourceId: $sourceId, confidence: $confidence, area: $area, risk: $risk, reason: $reason, suggestedAction: $suggestedAction)';
   }
 
   @override
@@ -310,7 +376,12 @@ class _$AicrFindingImpl extends _AicrFinding {
             (identical(other.sourceId, sourceId) ||
                 other.sourceId == sourceId) &&
             (identical(other.confidence, confidence) ||
-                other.confidence == confidence));
+                other.confidence == confidence) &&
+            (identical(other.area, area) || other.area == area) &&
+            (identical(other.risk, risk) || other.risk == risk) &&
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.suggestedAction, suggestedAction) ||
+                other.suggestedAction == suggestedAction));
   }
 
   @override
@@ -327,6 +398,10 @@ class _$AicrFindingImpl extends _AicrFinding {
     lineEnd,
     sourceId,
     confidence,
+    area,
+    risk,
+    reason,
+    suggestedAction,
   );
 
   /// Create a copy of AicrFinding
@@ -351,6 +426,10 @@ abstract class _AicrFinding extends AicrFinding {
     final int? lineEnd,
     final String? sourceId,
     final double? confidence,
+    final String? area,
+    final String? risk,
+    final String? reason,
+    final String? suggestedAction,
   }) = _$AicrFindingImpl;
   const _AicrFinding._() : super._();
 
@@ -376,7 +455,15 @@ abstract class _AicrFinding extends AicrFinding {
   @override
   String? get sourceId;
   @override
-  double? get confidence;
+  double? get confidence; // AI finding structured fields
+  @override
+  String? get area;
+  @override
+  String? get risk;
+  @override
+  String? get reason;
+  @override
+  String? get suggestedAction;
 
   /// Create a copy of AicrFinding
   /// with the given fields replaced by the non-null parameter values.

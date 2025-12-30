@@ -13,6 +13,11 @@ _$AiReviewHighlightImpl _$$AiReviewHighlightImplFromJson(
   title: json['title'] as String,
   detail: json['detail'] as String,
   ruleId: json['rule_id'] as String?,
+  area: json['area'] as String?,
+  risk: json['risk'] as String?,
+  reason: json['reason'] as String?,
+  suggestedAction: json['suggested_action'] as String?,
+  confidence: (json['confidence'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$$AiReviewHighlightImplToJson(
@@ -22,6 +27,11 @@ Map<String, dynamic> _$$AiReviewHighlightImplToJson(
   'title': instance.title,
   'detail': instance.detail,
   'rule_id': instance.ruleId,
+  'area': instance.area,
+  'risk': instance.risk,
+  'reason': instance.reason,
+  'suggested_action': instance.suggestedAction,
+  'confidence': instance.confidence,
 };
 
 const _$AiSeverityEnumMap = {

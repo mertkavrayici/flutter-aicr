@@ -52,6 +52,12 @@ class AiReviewHighlight with _$AiReviewHighlight {
     required String title,
     required String detail,
     @JsonKey(name: 'rule_id') String? ruleId,
+    // AI finding structured fields
+    String? area,
+    String? risk,
+    String? reason,
+    @JsonKey(name: 'suggested_action') String? suggestedAction,
+    double? confidence,
   }) = _AiReviewHighlight;
 
   factory AiReviewHighlight.fromJson(Map<String, dynamic> json) =>
@@ -81,7 +87,6 @@ class AiReview with _$AiReview {
     required List<String> limitations,
   }) = _AiReview;
 
-  factory AiReview.fromJson(Map<String, dynamic> json) => _$AiReviewFromJson(json);
+  factory AiReview.fromJson(Map<String, dynamic> json) =>
+      _$AiReviewFromJson(json);
 }
-
-

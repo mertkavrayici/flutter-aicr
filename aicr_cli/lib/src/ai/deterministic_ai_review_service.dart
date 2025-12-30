@@ -110,8 +110,9 @@ final class DeterministicAiReviewService implements AiReviewService {
   }
 
   String _msg(RuleResult r, AiLanguage language) {
-    if (language == AiLanguage.tr)
+    if (language == AiLanguage.tr) {
       return r.message['tr'] ?? r.message.values.first;
+    }
     return r.message['en'] ?? r.message.values.first;
   }
 }

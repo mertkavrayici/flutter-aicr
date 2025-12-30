@@ -2,9 +2,9 @@ import '../finding/models/aicr_finding.dart';
 import 'models/ai_review.dart';
 
 /// Maps AiReview to AicrFinding list for compatibility with existing findings system.
-/// 
+///
 /// Severity mapping:
-/// - AiSeverity.error -> AicrSeverity.critical
+/// - AiSeverity.error -> AicrSeverity.warning (AI sadece WARN üretir)
 /// - AiSeverity.warn -> AicrSeverity.warning
 /// - AiSeverity.info -> AicrSeverity.info
 class AiReviewMapper {
@@ -17,6 +17,11 @@ class AiReviewMapper {
       final severity = _mapSeverity(highlight.severity);
       final category = _inferCategory(highlight);
 
+      // Validate and clamp confidence to 0..1 range
+      final confidence = highlight.confidence != null
+          ? _clampConfidence(highlight.confidence!)
+          : null;
+
       // Use detail for both languages since AiReviewHighlight doesn't have separate tr/en
       findings.add(
         AicrFinding(
@@ -27,7 +32,11 @@ class AiReviewMapper {
           messageTr: highlight.detail,
           messageEn: highlight.detail,
           sourceId: highlight.ruleId ?? 'ai_review',
-          confidence: null,
+          confidence: confidence,
+          area: highlight.area,
+          risk: highlight.risk,
+          reason: highlight.reason,
+          suggestedAction: highlight.suggestedAction,
         ),
       );
     }
@@ -52,11 +61,13 @@ class AiReviewMapper {
     return findings;
   }
 
+  /// Maps AI severity to AicrSeverity.
+  /// AI sadece WARN üretir - error'lar da warning'e çevrilir.
   static AicrSeverity _mapSeverity(AiSeverity severity) => switch (severity) {
-        AiSeverity.error => AicrSeverity.critical,
-        AiSeverity.warn => AicrSeverity.warning,
-        AiSeverity.info => AicrSeverity.info,
-      };
+    AiSeverity.error => AicrSeverity.warning,
+    AiSeverity.warn => AicrSeverity.warning,
+    AiSeverity.info => AicrSeverity.info,
+  };
 
   static AicrCategory _inferCategory(AiReviewHighlight highlight) {
     // Try to infer category from ruleId if present
@@ -72,19 +83,25 @@ class AiReviewMapper {
   }
 
   static AicrCategory _mapCategoryFromRuleId(String ruleId) => switch (ruleId) {
-        'bloc_change_requires_tests' => AicrCategory.testing,
-        'large_change_set' => AicrCategory.dx,
-        'ui_change_suggests_golden_tests' => AicrCategory.quality,
-        'secret_or_env_exposure' => AicrCategory.security,
-        'layer_violation' => AicrCategory.architecture,
-        'large_diff_suggests_split' => AicrCategory.performance,
-        _ => AicrCategory.quality,
-      };
+    'bloc_change_requires_tests' => AicrCategory.testing,
+    'large_change_set' => AicrCategory.dx,
+    'ui_change_suggests_golden_tests' => AicrCategory.quality,
+    'secret_or_env_exposure' => AicrCategory.security,
+    'layer_violation' => AicrCategory.architecture,
+    'large_diff_suggests_split' => AicrCategory.performance,
+    _ => AicrCategory.quality,
+  };
 
   static String _makeFindingId(String type, String content, String? extra) {
     final seed = 'ai_review:$type:$content:${extra ?? ''}';
     final hash = seed.hashCode.toRadixString(16).substring(0, 12);
     return 'ai_review:$hash';
   }
-}
 
+  /// Clamps confidence value to 0..1 range.
+  static double _clampConfidence(double confidence) {
+    if (confidence < 0.0) return 0.0;
+    if (confidence > 1.0) return 1.0;
+    return confidence;
+  }
+}

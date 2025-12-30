@@ -22,8 +22,9 @@ final class GitNameStatusParser {
           break;
         }
         final newPath = tokens[i + 2];
-        entries.add(FileEntry.fromStringChangeType(
-            path: newPath, changeType: 'renamed'));
+        entries.add(
+          FileEntry.fromStringChangeType(path: newPath, changeType: 'renamed'),
+        );
         i += 3;
         continue;
       }
@@ -35,8 +36,9 @@ final class GitNameStatusParser {
           break;
         }
         final newPath = tokens[i + 2];
-        entries.add(FileEntry.fromStringChangeType(
-            path: newPath, changeType: 'modified'));
+        entries.add(
+          FileEntry.fromStringChangeType(path: newPath, changeType: 'modified'),
+        );
         i += 3;
         continue;
       }
@@ -47,8 +49,12 @@ final class GitNameStatusParser {
         break;
       }
       final path = tokens[i + 1];
-      entries.add(FileEntry.fromStringChangeType(
-          path: path, changeType: _mapStatus(status)));
+      entries.add(
+        FileEntry.fromStringChangeType(
+          path: path,
+          changeType: _mapStatus(status),
+        ),
+      );
       i += 2;
     }
 

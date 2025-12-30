@@ -1,15 +1,57 @@
 import 'aicr_rule.dart';
 import '../report/aicr_report.dart';
 
+part 'layer_violation/layer_violation_diff_scanner.dart';
+part 'layer_violation/layer_violation_policy.dart';
+part 'layer_violation/layer_violation_message_builder.dart';
+part 'layer_violation/layer_violation_evidence_formatter.dart';
+
 /// Architecture: Katman ihlali (heuristic)
-/// - presentation -> data import görürsek WARN.
+/// - presentation -> data/domain import görürsek WARN.
+/// - core -> feature import görürsek WARN.
+/// - Allowlist/denylist desteği (hardcode, sonra config yapılır).
 /// - Sadece diff'te eklenen import satırlarını tarar.
 final class LayerViolationRule implements AicrRule {
+  // Allowlist/denylist config edilebilir (şimdilik default hardcode).
+  final List<String> _allowlist;
+  final List<String> _denylist;
+  final LayerViolationPolicy? _policyOverride;
+
+  LayerViolationRule({
+    LayerViolationPolicy? policy,
+    List<String>? allowlist,
+    List<String>? denylist,
+  }) : _allowlist = allowlist ?? _defaultAllowlist,
+       _denylist = denylist ?? _defaultDenylist,
+       _policyOverride = policy;
+
   @override
   String get ruleId => 'layer_violation';
 
   @override
   String get title => 'Possible architecture layer violation';
+
+  // Allowlist: Bu import'lar her zaman izin verilir (false positive azaltmak için)
+  static const _defaultAllowlist = <String>[
+    // Flutter/Dart standart kütüphaneleri
+    'package:flutter/',
+    'package:dart:',
+    'dart:',
+    // Test dosyaları
+    '/test/',
+    '.test.dart',
+    '.test_',
+    // Shared/common utilities (genellikle her yerden import edilebilir)
+    '/shared/',
+    '/common/',
+    '/core/utils/',
+    '/core/constants/',
+  ];
+
+  // Denylist: Bu pattern'ler her zaman reddedilir (ekstra güvenlik için)
+  static const _defaultDenylist = <String>[
+    // Örnek: Eğer bir pattern kesinlikle yasaksa buraya eklenebilir
+  ];
 
   @override
   RuleResult evaluate({required List<String> changedFiles, String? diffText}) {
@@ -23,7 +65,10 @@ final class LayerViolationRule implements AicrRule {
       );
     }
 
-    final hits = _scan(text);
+    final policy =
+        _policyOverride ??
+        LayerViolationPolicy(allowlist: _allowlist, denylist: _denylist);
+    final hits = policy.evaluate(_LayerViolationDiffScanner().scan(text));
 
     if (hits.isEmpty) {
       return RuleResult.pass(
@@ -34,90 +79,23 @@ final class LayerViolationRule implements AicrRule {
       );
     }
 
-    final evidenceFiles = hits
-        .map((h) => h.filePath)
-        .whereType<String>()
-        .where((p) => p.trim().isNotEmpty)
-        .toSet()
-        .toList(growable: false);
+    final violationTypes = hits.map((h) => h.violationType).toSet();
+    final violationDescription =
+        _LayerViolationMessageBuilder().build(violationTypes, hits: hits);
+    final evidence = _LayerViolationEvidenceFormatter().format(hits);
 
-    return RuleResult.warn(
+    return RuleResult(
       ruleId: ruleId,
+      status: ReportStatus.warn,
       title: title,
-      tr: 'Presentation katmanından data katmanına doğrudan import tespit edildi. Clean Architecture sınırlarını korumak için dependency yönünü gözden geçir.',
-      en: 'Direct imports from presentation to data layer detected. Review dependency direction to preserve Clean Architecture boundaries.',
-      evidenceFiles: evidenceFiles.isNotEmpty
-          ? evidenceFiles
-          : changedFiles.take(3).toList(),
+      message: {'tr': violationDescription.tr, 'en': violationDescription.en},
+      evidence: evidence.isNotEmpty
+          ? evidence
+          : changedFiles
+                .take(3)
+                .map((p) => {'file_path': p})
+                .toList(growable: false),
     );
   }
 
-  List<_LayerHit> _scan(String diffText) {
-    final lines = diffText.split('\n');
-
-    String? currentFile;
-    final hits = <_LayerHit>[];
-
-    for (final raw in lines) {
-      final line = raw.trimRight();
-
-      if (line.startsWith('+++ ')) {
-        final p = line.replaceFirst('+++ ', '').trim();
-        if (p.startsWith('b/')) currentFile = p.substring(2);
-        if (p == '/dev/null') currentFile = null;
-        continue;
-      }
-
-      // Sadece eklenen satırlar (+) ve header hariç
-      if (!line.startsWith('+') || line.startsWith('+++')) continue;
-
-      // Sadece import satırlarını incele
-      final t = line.substring(1).trimLeft(); // '+' kaldır
-      if (!t.startsWith('import ')) continue;
-
-      // İhlal tanımı (heuristic):
-      // - Dosya presentation içinde
-      // - Import path'i data katmanını işaret ediyor
-      final file = currentFile?.replaceAll('\\', '/').toLowerCase();
-      if (file == null) continue;
-      final isPresentation = file.contains('/presentation/');
-      if (!isPresentation) continue;
-
-      final importPath = _extractImportPath(t);
-      final importLower = importPath.toLowerCase();
-
-      final importsData =
-          importLower.contains('/data/') ||
-          importLower.contains('.data.') ||
-          importLower.contains('data_');
-
-      if (importsData) {
-        hits.add(_LayerHit(filePath: currentFile, importPath: importPath));
-      }
-    }
-
-    return hits;
-  }
-
-  String _extractImportPath(String importLine) {
-    // import 'package:xxx/..../file.dart';
-    final start = importLine.indexOf("'");
-    if (start != -1) {
-      final end = importLine.indexOf("'", start + 1);
-      if (end != -1) return importLine.substring(start + 1, end);
-    }
-    final start2 = importLine.indexOf('"');
-    if (start2 != -1) {
-      final end2 = importLine.indexOf('"', start2 + 1);
-      if (end2 != -1) return importLine.substring(start2 + 1, end2);
-    }
-    return importLine;
-  }
-}
-
-final class _LayerHit {
-  final String? filePath;
-  final String importPath;
-
-  _LayerHit({required this.filePath, required this.importPath});
 }

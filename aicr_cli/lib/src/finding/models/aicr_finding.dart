@@ -36,6 +36,11 @@ class AicrFinding with _$AicrFinding {
     int? lineEnd,
     String? sourceId,
     double? confidence,
+    // AI finding structured fields
+    String? area,
+    String? risk,
+    String? reason,
+    String? suggestedAction,
   }) = _AicrFinding;
 
   factory AicrFinding.fromJson(Map<String, dynamic> json) {
@@ -52,6 +57,10 @@ class AicrFinding with _$AicrFinding {
       lineEnd: dto.lineEnd,
       sourceId: dto.sourceId,
       confidence: dto.confidence,
+      area: dto.area,
+      risk: dto.risk,
+      reason: dto.reason,
+      suggestedAction: dto.suggestedAction,
     );
   }
 
@@ -66,7 +75,61 @@ class AicrFinding with _$AicrFinding {
     lineEnd: lineEnd,
     sourceId: sourceId,
     confidence: confidence,
+    area: area,
+    risk: risk,
+    reason: reason,
+    suggestedAction: suggestedAction,
   ).toJson();
+}
+
+/// Extension for stable key generation and finding matching.
+extension AicrFindingExtensions on AicrFinding {
+  /// Normalizes a string for comparison (lowercase, trim, remove extra spaces).
+  static String _normalize(String s) {
+    return s.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  /// Generates a stable key for deduplication: area + normalized title.
+  /// Used for "top actions" uniqueness calculation and finding matching.
+  String get stableKey {
+    final normalizedTitle = _normalize(title);
+    final areaPart = area != null ? _normalize(area!) : '';
+    return '$areaPart|$normalizedTitle';
+  }
+
+  /// Checks if two findings are similar based on area + normalized title/risk.
+  /// Used for deduplication when merging AI findings with deterministic findings.
+  bool isSimilarTo(AicrFinding other) {
+    // Must have same area (or both null)
+    if ((area == null) != (other.area == null)) return false;
+    if (area != null && other.area != null) {
+      if (_normalize(area!) != _normalize(other.area!)) return false;
+    }
+
+    // Check title similarity
+    final thisTitle = _normalize(title);
+    final otherTitle = _normalize(other.title);
+    if (thisTitle == otherTitle) return true;
+
+    // Check risk similarity if both have risk
+    if (risk != null && other.risk != null) {
+      final thisRisk = _normalize(risk!);
+      final otherRisk = _normalize(other.risk!);
+      if (thisRisk == otherRisk && thisRisk.isNotEmpty) return true;
+    }
+
+    // Check if titles are similar (contain same key words)
+    final thisWords = thisTitle.split(' ').where((w) => w.length > 3).toSet();
+    final otherWords = otherTitle.split(' ').where((w) => w.length > 3).toSet();
+    if (thisWords.isNotEmpty && otherWords.isNotEmpty) {
+      final intersection = thisWords.intersection(otherWords);
+      // If more than 50% of words match, consider similar
+      final similarity = intersection.length / thisWords.length;
+      if (similarity > 0.5) return true;
+    }
+
+    return false;
+  }
 }
 
 @JsonSerializable(includeIfNull: false)
@@ -85,6 +148,12 @@ class AicrFindingDto {
   @JsonKey(name: 'source_id')
   final String? sourceId;
   final double? confidence;
+  // AI finding structured fields
+  final String? area;
+  final String? risk;
+  final String? reason;
+  @JsonKey(name: 'suggested_action')
+  final String? suggestedAction;
 
   const AicrFindingDto({
     required this.id,
@@ -97,6 +166,10 @@ class AicrFindingDto {
     this.lineEnd,
     this.sourceId,
     this.confidence,
+    this.area,
+    this.risk,
+    this.reason,
+    this.suggestedAction,
   });
 
   factory AicrFindingDto.fromJson(Map<String, dynamic> json) =>
