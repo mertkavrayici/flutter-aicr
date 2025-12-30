@@ -1,0 +1,100 @@
+name: AICR PR Comment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+env:
+  AICR_AI: false
+
+jobs:
+  generate-pr-comment:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          dart-version: '3.10.1'
+
+      - name: Install dependencies
+        working-directory: aicr_cli
+        run: dart pub get
+
+      - name: Build generated code
+        working-directory: aicr_cli
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Determine git range
+        id: git-range
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="${{ github.event.pull_request.base.sha }}"
+            HEAD_REF="${{ github.event.pull_request.head.sha }}"
+            echo "range=$BASE_REF...$HEAD_REF" >> $GITHUB_OUTPUT
+          else
+            # For workflow_dispatch, compare against default branch
+            DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+            git fetch origin $DEFAULT_BRANCH
+            BASE_REF="origin/$DEFAULT_BRANCH"
+            HEAD_REF="HEAD"
+            echo "range=$BASE_REF...$HEAD_REF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if AI should be enabled
+        id: ai-check
+        env:
+          AICR_AI_ENV: ${{ env.AICR_AI }}
+          AICR_ENABLE_AI_SECRET: ${{ secrets.AICR_ENABLE_AI }}
+        run: |
+          # Check secret first, then env var
+          if [ "$AICR_ENABLE_AI_SECRET" = "true" ]; then
+            echo "ai_enabled=true" >> $GITHUB_OUTPUT
+            echo "AI enabled via AICR_ENABLE_AI secret"
+          elif [ "$AICR_AI_ENV" = "true" ]; then
+            echo "ai_enabled=true" >> $GITHUB_OUTPUT
+            echo "AI enabled via AICR_AI env var"
+          else
+            echo "ai_enabled=false" >> $GITHUB_OUTPUT
+            echo "AI disabled (default)"
+          fi
+
+      - name: Run AICR analysis
+        working-directory: aicr_cli
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          AI_FLAG=""
+          if [ "${{ steps.ai-check.outputs.ai_enabled }}" = "true" ]; then
+            AI_FLAG="--ai"
+          fi
+          
+          dart run bin/aicr_cli.dart \
+            --repo "$REPO_NAME" \
+            --repo-path "${{ github.workspace }}" \
+            --mode git_name_status \
+            --range "${{ steps.git-range.outputs.range }}" \
+            --format pr_comment \
+            $AI_FLAG \
+            --lang en \
+            --out pr_comment.md
+
+      - name: Upload PR comment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-comment
+          path: aicr_cli/pr_comment.md
+          retention-days: 7
+
+      - name: Display PR comment preview
+        run: |
+          echo "=== PR Comment Preview ==="
+          cat aicr_cli/pr_comment.md || echo "No PR comment generated"
+
