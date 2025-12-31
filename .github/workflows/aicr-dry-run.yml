@@ -60,8 +60,8 @@ jobs:
           else
             EXTRA=""
           fi
+
           dart run bin/aicr_cli.dart analyze \
-            --repo-path . \
             --range origin/${{ github.base_ref }}...HEAD \
             --format pr_comment \
             --out pr_comment.md \
