@@ -85,16 +85,19 @@ ArgParser _createAnalyzeCommandParser() {
     )
     ..addFlag(
       'post-comment',
-      help: 'Enable posting PR/MR comments (default from .aicr/ci.yaml or false)',
+      help:
+          'Enable posting PR/MR comments (default from .aicr/ci.yaml or false)',
     )
     ..addOption(
       'comment-mode',
       allowed: ['update', 'always_new'],
-      help: 'Comment mode: update (default) or always_new (default from .aicr/ci.yaml)',
+      help:
+          'Comment mode: update (default) or always_new (default from .aicr/ci.yaml)',
     )
     ..addOption(
       'comment-marker',
-      help: 'Comment marker string (default from .aicr/ci.yaml or "AICR_COMMENT")',
+      help:
+          'Comment marker string (default from .aicr/ci.yaml or "AICR_COMMENT")',
     );
 }
 
@@ -115,7 +118,9 @@ Future<void> _runAnalyze(ArgResults results) async {
   // Parse AI options
   final aiEnabled = results['ai'] as bool;
   final requestedAiMode = results['ai-mode'] as String?;
-  final aiMode = aiEnabled ? AiModeParsing.fromString(requestedAiMode) : AiMode.noop;
+  final aiMode = aiEnabled
+      ? AiModeParsing.fromString(requestedAiMode)
+      : AiMode.noop;
   final verbose = results['verbose'] as bool;
 
   // Get repo path (optional, defaults to current directory)
@@ -133,7 +138,8 @@ Future<void> _runAnalyze(ArgResults results) async {
   final profileLoader = ProfileLoader();
   final projectProfile = profileLoader.load(repoPath);
   if (verbose) {
-    if (profileLoader.lastProfileLoaded && profileLoader.lastProfilePath != null) {
+    if (profileLoader.lastProfileLoaded &&
+        profileLoader.lastProfilePath != null) {
       stderr.writeln(
         'AI: profileLoaded=true path=${profileLoader.lastProfilePath}',
       );
@@ -150,9 +156,9 @@ Future<void> _runAnalyze(ArgResults results) async {
   final postComment = results.wasParsed('post-comment')
       ? (results['post-comment'] as bool)
       : ciConfig.postComment;
-  final commentMode = results['comment-mode'] as String? ?? ciConfig.commentMode;
-  final commentMarker =
-      results['comment-marker'] as String? ?? ciConfig.marker;
+  final commentMode =
+      results['comment-mode'] as String? ?? ciConfig.commentMode;
+  final commentMarker = results['comment-marker'] as String? ?? ciConfig.marker;
 
   // Get diff text
   String diffText;
