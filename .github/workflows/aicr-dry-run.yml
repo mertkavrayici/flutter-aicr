@@ -15,31 +15,54 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Repo debug (show files)
-        run: |
-          echo "PWD=$(pwd)"
-          echo "LS:"
-          ls -la
-          echo "FIND pubspec.yaml (maxdepth 4):"
-          find . -maxdepth 4 -name pubspec.yaml -print
+          submodules: recursive
 
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1
 
+      - name: Locate Dart package (pubspec.yaml)
+        id: locate
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "PWD=$(pwd)"
+          echo "Top-level files:"
+          ls -la
+
+          PUBSPEC_PATH="$(find . -name pubspec.yaml -not -path '*/.dart_tool/*' -not -path '*/build/*' | head -n 1 || true)"
+
+          if [ -z "${PUBSPEC_PATH}" ]; then
+            echo "❌ pubspec.yaml not found anywhere in repo."
+            echo "Tree (depth 4):"
+            (command -v tree >/dev/null 2>&1 && tree -L 4) || find . -maxdepth 4 -type d -print
+            exit 66
+          fi
+
+          PKG_DIR="$(dirname "${PUBSPEC_PATH}")"
+          echo "✅ Found pubspec at: ${PUBSPEC_PATH}"
+          echo "✅ Package dir: ${PKG_DIR}"
+
+          echo "pkg_dir=${PKG_DIR}" >> "$GITHUB_OUTPUT"
+
       - name: Install dependencies
+        working-directory: ${{ steps.locate.outputs.pkg_dir }}
         run: dart pub get
 
       - name: Run AICR (dry-run)
+        working-directory: ${{ steps.locate.outputs.pkg_dir }}
         run: |
+          set -euo pipefail
           dart run bin/aicr_cli.dart analyze \
             --repo-path . \
             --range origin/${{ github.base_ref }}...HEAD \
             --format pr_comment \
             --out pr_comment.md
 
+          echo "Generated files:"
+          ls -la
+
       - name: Upload PR comment artifact
         uses: actions/upload-artifact@v4
         with:
           name: pr-comment
-          path: pr_comment.md
+          path: ${{ steps.locate.outputs.pkg_dir }}/pr_comment.md
