@@ -5,10 +5,13 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   aicr:
     runs-on: ubuntu-latest
+    env:
+      AICR_POST_COMMENT: "true"
 
     steps:
       - name: Checkout
@@ -52,11 +55,17 @@ jobs:
         working-directory: ${{ steps.locate.outputs.pkg_dir }}
         run: |
           set -euo pipefail
+          if [ "$AICR_POST_COMMENT" = "true" ]; then
+            EXTRA="--post-comment"
+          else
+            EXTRA=""
+          fi
           dart run bin/aicr_cli.dart analyze \
             --repo-path . \
             --range origin/${{ github.base_ref }}...HEAD \
             --format pr_comment \
-            --out pr_comment.md
+            --out pr_comment.md \
+            $EXTRA
 
           echo "Generated files:"
           ls -la
