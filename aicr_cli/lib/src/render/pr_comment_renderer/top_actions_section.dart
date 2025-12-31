@@ -14,11 +14,9 @@ final class TopActionsSection {
 
     md.h3('Top actions');
     for (final f in top) {
-      final tag = isAi(f) ? ' (AI${confTag(f)})' : '';
-      md.bullet('**${f.title}**$tag — ${msg(f, locale)}');
+      final tag = isAi(f) ? '[ai${confTag(f)}]' : '[det]';
+      md.bullet('**${f.title}** $tag — ${msg(f, locale)}');
     }
     md.nl();
   }
 }
-
-

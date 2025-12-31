@@ -18,6 +18,12 @@ enum AicrCategory {
 
 enum AicrSeverity { info, suggestion, warning, critical }
 
+/// Where this finding originates from.
+///
+/// - `deterministic`: produced by deterministic rules/heuristics.
+/// - `ai`: produced by AI review layer (best-effort, non-authoritative).
+enum AicrFindingSource { deterministic, ai }
+
 @freezed
 class AicrFinding with _$AicrFinding {
   const AicrFinding._();
@@ -35,6 +41,7 @@ class AicrFinding with _$AicrFinding {
     int? lineStart,
     int? lineEnd,
     String? sourceId,
+    AicrFindingSource? source,
     double? confidence,
     // AI finding structured fields
     String? area,
@@ -56,6 +63,7 @@ class AicrFinding with _$AicrFinding {
       lineStart: dto.lineStart,
       lineEnd: dto.lineEnd,
       sourceId: dto.sourceId,
+      source: dto.source,
       confidence: dto.confidence,
       area: dto.area,
       risk: dto.risk,
@@ -74,6 +82,7 @@ class AicrFinding with _$AicrFinding {
     lineStart: lineStart,
     lineEnd: lineEnd,
     sourceId: sourceId,
+    source: source,
     confidence: confidence,
     area: area,
     risk: risk,
@@ -147,6 +156,7 @@ class AicrFindingDto {
   final int? lineEnd;
   @JsonKey(name: 'source_id')
   final String? sourceId;
+  final AicrFindingSource? source;
   final double? confidence;
   // AI finding structured fields
   final String? area;
@@ -165,6 +175,7 @@ class AicrFindingDto {
     this.lineStart,
     this.lineEnd,
     this.sourceId,
+    this.source,
     this.confidence,
     this.area,
     this.risk,

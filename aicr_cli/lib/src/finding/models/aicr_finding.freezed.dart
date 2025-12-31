@@ -29,6 +29,7 @@ mixin _$AicrFinding {
   int? get lineStart => throw _privateConstructorUsedError;
   int? get lineEnd => throw _privateConstructorUsedError;
   String? get sourceId => throw _privateConstructorUsedError;
+  AicrFindingSource? get source => throw _privateConstructorUsedError;
   double? get confidence =>
       throw _privateConstructorUsedError; // AI finding structured fields
   String? get area => throw _privateConstructorUsedError;
@@ -61,6 +62,7 @@ abstract class $AicrFindingCopyWith<$Res> {
     int? lineStart,
     int? lineEnd,
     String? sourceId,
+    AicrFindingSource? source,
     double? confidence,
     String? area,
     String? risk,
@@ -94,6 +96,7 @@ class _$AicrFindingCopyWithImpl<$Res, $Val extends AicrFinding>
     Object? lineStart = freezed,
     Object? lineEnd = freezed,
     Object? sourceId = freezed,
+    Object? source = freezed,
     Object? confidence = freezed,
     Object? area = freezed,
     Object? risk = freezed,
@@ -142,6 +145,10 @@ class _$AicrFindingCopyWithImpl<$Res, $Val extends AicrFinding>
                 ? _value.sourceId
                 : sourceId // ignore: cast_nullable_to_non_nullable
                       as String?,
+            source: freezed == source
+                ? _value.source
+                : source // ignore: cast_nullable_to_non_nullable
+                      as AicrFindingSource?,
             confidence: freezed == confidence
                 ? _value.confidence
                 : confidence // ignore: cast_nullable_to_non_nullable
@@ -188,6 +195,7 @@ abstract class _$$AicrFindingImplCopyWith<$Res>
     int? lineStart,
     int? lineEnd,
     String? sourceId,
+    AicrFindingSource? source,
     double? confidence,
     String? area,
     String? risk,
@@ -220,6 +228,7 @@ class __$$AicrFindingImplCopyWithImpl<$Res>
     Object? lineStart = freezed,
     Object? lineEnd = freezed,
     Object? sourceId = freezed,
+    Object? source = freezed,
     Object? confidence = freezed,
     Object? area = freezed,
     Object? risk = freezed,
@@ -268,6 +277,10 @@ class __$$AicrFindingImplCopyWithImpl<$Res>
             ? _value.sourceId
             : sourceId // ignore: cast_nullable_to_non_nullable
                   as String?,
+        source: freezed == source
+            ? _value.source
+            : source // ignore: cast_nullable_to_non_nullable
+                  as AicrFindingSource?,
         confidence: freezed == confidence
             ? _value.confidence
             : confidence // ignore: cast_nullable_to_non_nullable
@@ -307,6 +320,7 @@ class _$AicrFindingImpl extends _AicrFinding {
     this.lineStart,
     this.lineEnd,
     this.sourceId,
+    this.source,
     this.confidence,
     this.area,
     this.risk,
@@ -337,6 +351,8 @@ class _$AicrFindingImpl extends _AicrFinding {
   @override
   final String? sourceId;
   @override
+  final AicrFindingSource? source;
+  @override
   final double? confidence;
   // AI finding structured fields
   @override
@@ -350,7 +366,7 @@ class _$AicrFindingImpl extends _AicrFinding {
 
   @override
   String toString() {
-    return 'AicrFinding(id: $id, category: $category, severity: $severity, title: $title, messageTr: $messageTr, messageEn: $messageEn, filePath: $filePath, lineStart: $lineStart, lineEnd: $lineEnd, sourceId: $sourceId, confidence: $confidence, area: $area, risk: $risk, reason: $reason, suggestedAction: $suggestedAction)';
+    return 'AicrFinding(id: $id, category: $category, severity: $severity, title: $title, messageTr: $messageTr, messageEn: $messageEn, filePath: $filePath, lineStart: $lineStart, lineEnd: $lineEnd, sourceId: $sourceId, source: $source, confidence: $confidence, area: $area, risk: $risk, reason: $reason, suggestedAction: $suggestedAction)';
   }
 
   @override
@@ -375,6 +391,7 @@ class _$AicrFindingImpl extends _AicrFinding {
             (identical(other.lineEnd, lineEnd) || other.lineEnd == lineEnd) &&
             (identical(other.sourceId, sourceId) ||
                 other.sourceId == sourceId) &&
+            (identical(other.source, source) || other.source == source) &&
             (identical(other.confidence, confidence) ||
                 other.confidence == confidence) &&
             (identical(other.area, area) || other.area == area) &&
@@ -397,6 +414,7 @@ class _$AicrFindingImpl extends _AicrFinding {
     lineStart,
     lineEnd,
     sourceId,
+    source,
     confidence,
     area,
     risk,
@@ -425,6 +443,7 @@ abstract class _AicrFinding extends AicrFinding {
     final int? lineStart,
     final int? lineEnd,
     final String? sourceId,
+    final AicrFindingSource? source,
     final double? confidence,
     final String? area,
     final String? risk,
@@ -454,6 +473,8 @@ abstract class _AicrFinding extends AicrFinding {
   int? get lineEnd;
   @override
   String? get sourceId;
+  @override
+  AicrFindingSource? get source;
   @override
   double? get confidence; // AI finding structured fields
   @override

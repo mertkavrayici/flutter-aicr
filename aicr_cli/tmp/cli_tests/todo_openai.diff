@@ -1,0 +1,7 @@
+diff --git a/lib/a.dart b/lib/a.dart
+index 111..222 100644
+--- a/lib/a.dart
++++ b/lib/a.dart
+@@ -1,1 +1,2 @@
+ class A {}
++class B {}

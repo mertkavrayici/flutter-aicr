@@ -77,10 +77,35 @@ extension InputInfoFactory on InputInfo {
 
 @freezed
 class AiInfo with _$AiInfo {
-  const factory AiInfo({@JsonKey(name: 'enabled') required bool enabled}) =
-      _AiInfo;
+  const factory AiInfo({
+    @JsonKey(name: 'enabled') required bool enabled,
+    @Default('noop') String mode,
+  }) = _AiInfo;
 
   factory AiInfo.fromJson(Map<String, dynamic> json) => _$AiInfoFromJson(json);
+}
+
+@freezed
+class CommentInfo with _$CommentInfo {
+  const factory CommentInfo({
+    @JsonKey(name: 'post_comment') @Default(false) bool postComment,
+    @JsonKey(name: 'comment_mode') @Default('update') String commentMode,
+    @Default('AICR_COMMENT') String marker,
+  }) = _CommentInfo;
+
+  factory CommentInfo.fromJson(Map<String, dynamic> json) =>
+      _$CommentInfoFromJson(json);
+}
+
+@freezed
+class CiInfo with _$CiInfo {
+  const factory CiInfo({
+    @JsonKey(name: 'post_comment') @Default(false) bool postComment,
+    @JsonKey(name: 'comment_mode') @Default('update') String commentMode,
+    @Default('AICR_COMMENT') String marker,
+  }) = _CiInfo;
+
+  factory CiInfo.fromJson(Map<String, dynamic> json) => _$CiInfoFromJson(json);
 }
 
 // Meta model
@@ -93,6 +118,8 @@ class Meta with _$Meta {
     @JsonKey(name: 'repo') required RepoInfo repo,
     @JsonKey(name: 'input') required InputInfo input,
     @JsonKey(name: 'ai') required AiInfo ai,
+    @JsonKey(name: 'comment') CommentInfo? comment,
+    @JsonKey(name: 'ci') CiInfo? ci,
   }) = _Meta;
 
   // Helper factory for backward compatibility with flat constructor
@@ -102,15 +129,29 @@ class Meta with _$Meta {
     required String createdAt,
     required String repoName,
     required bool aiEnabled,
+    String aiMode = 'noop',
     required String diffHash,
     required int fileCount,
+    bool postComment = false,
+    String commentMode = 'update',
+    String marker = 'AICR_COMMENT',
   }) => Meta(
     tool: ToolInfo(name: 'AICR', version: toolVersion),
     runId: runId,
     createdAt: createdAt,
     repo: RepoInfo(name: repoName),
     input: InputInfoFactory.create(diffHash: diffHash, fileCount: fileCount),
-    ai: AiInfo(enabled: aiEnabled),
+    ai: AiInfo(enabled: aiEnabled, mode: aiMode),
+    comment: CommentInfo(
+      postComment: postComment,
+      commentMode: commentMode,
+      marker: marker,
+    ),
+    ci: CiInfo(
+      postComment: postComment,
+      commentMode: commentMode,
+      marker: marker,
+    ),
   );
 
   factory Meta.fromJson(Map<String, dynamic> json) => _$MetaFromJson(json);
@@ -247,6 +288,7 @@ extension MetaExtensions on Meta {
   String get toolVersion => tool.version;
   String get repoName => repo.name;
   bool get aiEnabled => ai.enabled;
+  String get aiMode => ai.mode;
   String get diffHash => input.diffHash;
   int get fileCount => input.fileCount;
 }

@@ -1,0 +1,152 @@
+{
+  "meta": {
+    "tool": {
+      "name": "AICR",
+      "version": "0.1.0"
+    },
+    "run_id": "aicr_1767170479568",
+    "created_at": "2025-12-31T11:41:19.568625",
+    "repo": {
+      "name": "test-repo"
+    },
+    "input": {
+      "diff_type": "git_diff",
+      "diff_hash": "sha256:693d8499225f13832f6e22e9ed4603ebb8355e844fdcdc880cf9bfbaacf54069",
+      "file_count": 1
+    },
+    "ai": {
+      "enabled": false,
+      "mode": "noop"
+    },
+    "comment": {
+      "post_comment": true,
+      "comment_mode": "update",
+      "marker": "AICR_COMMENT"
+    },
+    "ci": {
+      "post_comment": true,
+      "comment_mode": "update",
+      "marker": "AICR_COMMENT"
+    }
+  },
+  "summary": {
+    "status": "pass",
+    "rule_results": {
+      "pass": 9,
+      "warn": 0,
+      "fail": 0
+    },
+    "contract_results": {
+      "pass": 0,
+      "warn": 0,
+      "fail": 0
+    },
+    "file_findings": {
+      "info": 0,
+      "warn": 0,
+      "error": 0
+    }
+  },
+  "rules": [
+    {
+      "rule_id": "bloc_change_requires_tests",
+      "status": "pass",
+      "title": "BLoC changes should include tests",
+      "message": {
+        "tr": "BLoC ile ilgili değişiklik tespit edilmedi.",
+        "en": "No BLoC-related change detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "secret_or_env_exposure",
+      "status": "pass",
+      "title": "Potential secret/env exposure in diff",
+      "message": {
+        "tr": "Secret/env sızıntısı tespit edilmedi.",
+        "en": "No secret/env exposure detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "diff_secret_patterns",
+      "status": "pass",
+      "title": "Potential secret patterns detected in diff",
+      "message": {
+        "tr": "Secret pattern tespit edilmedi.",
+        "en": "No secret pattern detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "high_entropy_secret",
+      "status": "pass",
+      "title": "High-entropy secret/token pattern detected",
+      "message": {
+        "tr": "High-entropy secret/token pattern tespit edilmedi.",
+        "en": "No high-entropy secret/token pattern detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "large_change_set",
+      "status": "pass",
+      "title": "Large change set might be hard to review",
+      "message": {
+        "tr": "Değişen dosya sayısı makul görünüyor.",
+        "en": "Changed file count looks reasonable."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "ui_change_suggests_golden_tests",
+      "status": "pass",
+      "title": "UI changes may benefit from golden tests",
+      "message": {
+        "tr": "UI ile ilgili değişiklik tespit edilmedi.",
+        "en": "No UI-related changes detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "layer_violation",
+      "status": "pass",
+      "title": "Possible architecture layer violation",
+      "message": {
+        "tr": "Katman ihlali şüphesi tespit edilmedi.",
+        "en": "No layer violation suspicion detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "large_diff_suggests_split",
+      "status": "pass",
+      "title": "Large diff might be risky to review/performance",
+      "message": {
+        "tr": "Diff boyutu makul görünüyor.",
+        "en": "Diff size looks reasonable."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "public_api_change_requires_docs",
+      "status": "pass",
+      "title": "Public API change may require docs/changelog update",
+      "message": {
+        "tr": "Public API değişikliği şüphesi yok.",
+        "en": "No public API change suspicion."
+      },
+      "evidence": []
+    }
+  ],
+  "findings": [],
+  "contracts": [],
+  "files": [
+    {
+      "path": "lib/a.dart",
+      "change_type": "modified"
+    }
+  ],
+  "recommendations": [],
+  "ai_review": null
+}

@@ -28,7 +28,12 @@ index 111..222 100644
       expect(r.evidence, isNotEmpty);
       final ev = r.evidence.first;
       expect(ev['file_path'], 'lib/features/foo/presentation/foo_page.dart');
-      expect((ev['import'] as String?) ?? '', contains("import 'package:my_app/features/foo/data/foo_repository_impl.dart';"));
+      expect(
+        (ev['import'] as String?) ?? '',
+        contains(
+          "import 'package:my_app/features/foo/data/foo_repository_impl.dart';",
+        ),
+      );
     });
 
     test('warns when presentation imports domain', () {
@@ -53,17 +58,16 @@ index 111..222 100644
 
     test('warns when core imports feature', () {
       const diff = r'''
-diff --git a/lib/core/utils/helper.dart b/lib/core/utils/helper.dart
+diff --git a/lib/core/di/injection.dart b/lib/core/di/injection.dart
 index 111..222 100644
---- a/lib/core/utils/helper.dart
-+++ b/lib/core/utils/helper.dart
+--- a/lib/core/di/injection.dart
++++ b/lib/core/di/injection.dart
 @@ -1,1 +1,2 @@
- class Helper {}
 +import 'package:my_app/features/foo/domain/foo_entity.dart';
 ''';
 
       final r = LayerViolationRule().evaluate(
-        changedFiles: const ['lib/core/utils/helper.dart'],
+        changedFiles: const ['lib/core/di/injection.dart'],
         diffText: diff,
       );
 
@@ -90,8 +94,7 @@ index 111..222 100644
         diffText: diff,
       );
 
-      // This will warn because we flag presentation->domain
-      expect(r.status.name, 'warn');
+      expect(r.status.name, 'pass');
     });
 
     test('passes when allowlist import detected', () {

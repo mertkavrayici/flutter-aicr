@@ -17,6 +17,7 @@ AicrFindingDto _$AicrFindingDtoFromJson(Map<String, dynamic> json) =>
       lineStart: (json['line_start'] as num?)?.toInt(),
       lineEnd: (json['line_end'] as num?)?.toInt(),
       sourceId: json['source_id'] as String?,
+      source: $enumDecodeNullable(_$AicrFindingSourceEnumMap, json['source']),
       confidence: (json['confidence'] as num?)?.toDouble(),
       area: json['area'] as String?,
       risk: json['risk'] as String?,
@@ -35,6 +36,8 @@ Map<String, dynamic> _$AicrFindingDtoToJson(AicrFindingDto instance) =>
       if (instance.lineStart case final value?) 'line_start': value,
       if (instance.lineEnd case final value?) 'line_end': value,
       if (instance.sourceId case final value?) 'source_id': value,
+      if (_$AicrFindingSourceEnumMap[instance.source] case final value?)
+        'source': value,
       if (instance.confidence case final value?) 'confidence': value,
       if (instance.area case final value?) 'area': value,
       if (instance.risk case final value?) 'risk': value,
@@ -58,4 +61,9 @@ const _$AicrSeverityEnumMap = {
   AicrSeverity.suggestion: 'suggestion',
   AicrSeverity.warning: 'warning',
   AicrSeverity.critical: 'critical',
+};
+
+const _$AicrFindingSourceEnumMap = {
+  AicrFindingSource.deterministic: 'deterministic',
+  AicrFindingSource.ai: 'ai',
 };

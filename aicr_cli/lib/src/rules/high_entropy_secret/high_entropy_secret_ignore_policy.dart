@@ -20,5 +20,3 @@ final class IgnorePolicy {
     return false;
   }
 }
-
-

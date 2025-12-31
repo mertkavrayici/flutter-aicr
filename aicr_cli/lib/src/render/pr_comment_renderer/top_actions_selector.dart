@@ -4,10 +4,7 @@ final class _TopActionsSelector {
   final bool Function(AicrFinding) isAi;
   final int Function(AicrSeverity) sevRank;
 
-  const _TopActionsSelector({
-    required this.isAi,
-    required this.sevRank,
-  });
+  const _TopActionsSelector({required this.isAi, required this.sevRank});
 
   static final RegExp _nonAlnum = RegExp(r'[^a-z0-9]');
 
@@ -54,5 +51,3 @@ final class _TopActionsSelector {
     return unique;
   }
 }
-
-

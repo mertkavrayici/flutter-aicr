@@ -32,6 +32,7 @@ class AiReviewMapper {
           messageTr: highlight.detail,
           messageEn: highlight.detail,
           sourceId: highlight.ruleId ?? 'ai_review',
+          source: AicrFindingSource.ai,
           confidence: confidence,
           area: highlight.area,
           risk: highlight.risk,
@@ -53,6 +54,7 @@ class AiReviewMapper {
           messageTr: action.action,
           messageEn: action.action,
           sourceId: 'ai_review_action',
+          source: AicrFindingSource.ai,
           confidence: null,
         ),
       );
@@ -87,14 +89,18 @@ class AiReviewMapper {
     'large_change_set' => AicrCategory.dx,
     'ui_change_suggests_golden_tests' => AicrCategory.quality,
     'secret_or_env_exposure' => AicrCategory.security,
+    'diff_secret_patterns' => AicrCategory.security,
     'layer_violation' => AicrCategory.architecture,
     'large_diff_suggests_split' => AicrCategory.performance,
+    'public_api_change_requires_docs' => AicrCategory.dx,
     _ => AicrCategory.quality,
   };
 
   static String _makeFindingId(String type, String content, String? extra) {
     final seed = 'ai_review:$type:$content:${extra ?? ''}';
-    final hash = seed.hashCode.toRadixString(16).substring(0, 12);
+    // `hashCode.toRadixString(16)` can be shorter than 12 chars; pad to keep stable length.
+    final hex = seed.hashCode.toUnsigned(32).toRadixString(16).padLeft(12, '0');
+    final hash = hex.substring(0, 12);
     return 'ai_review:$hash';
   }
 

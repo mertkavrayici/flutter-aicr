@@ -5,7 +5,7 @@ import 'package:aicr_cli/src/ai/ai.dart';
 
 final class ThrowingAiReviewer implements AiReviewer {
   @override
-  Future<List<AicrFinding>> review(AiReviewInput input) async {
+  Future<AiReviewResult> review(AiReviewRequest request) async {
     throw Exception('boom');
   }
 }

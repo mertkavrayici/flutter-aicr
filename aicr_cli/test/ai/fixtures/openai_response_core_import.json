@@ -1,0 +1,13 @@
+{
+    "findings": [
+      {
+        "title": "Core imports feature seeding code",
+        "description": "In Budgetment, core must not import features. Move the transaction seeder registration into the transactions feature DI module, or expose an abstraction in core and implement it in the feature.",
+        "severity": "warning",
+        "category": "architecture",
+        "file": "lib/core/di/core_module.dart",
+        "line": 1
+      }
+    ]
+  }
+  

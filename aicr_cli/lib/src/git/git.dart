@@ -15,3 +15,4 @@ export 'git_changed_files_service.dart';
 
 // Implementations
 export 'io_git_process_runner.dart';
+

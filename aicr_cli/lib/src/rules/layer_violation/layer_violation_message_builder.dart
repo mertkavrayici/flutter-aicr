@@ -43,12 +43,13 @@ final class _LayerViolationMessageBuilder {
           'According to Clean Architecture principles, presentation layer should only depend on domain layer. Data layer access should be done through domain layer (repository interface).';
     } else if (violations.contains('PRESENTATION_TO_DOMAIN')) {
       trReason =
-          'Presentation katmanından domain katmanına doğrudan import tespit edildi. ';
-      enReason = 'Direct imports from presentation to domain layer detected. ';
+          'Presentation katmanından domain katmanına (entity/value object dışı) import tespit edildi. ';
+      enReason =
+          'Imports from presentation to domain (non-entity/value-object code) detected. ';
       trAction =
-          'Clean Architecture prensiplerine göre, presentation katmanı domain katmanına bağımlı olabilir, ancak bu genellikle use case veya entity gibi domain abstractions üzerinden olmalıdır. Doğrudan domain implementation\'larına bağımlılık mimari sınırları ihlal edebilir.';
+          'Allowed olanlar: domain entities / value objects gibi saf tipler. Not allowed olanlar: domain “implementation” detayları veya feature-specific logic. Presentation katmanında use case arayüzleri üzerinden ilerle ve bağımlılığı sadeleştir.';
       enAction =
-          'According to Clean Architecture principles, presentation layer can depend on domain layer, but this should typically be through domain abstractions like use cases or entities. Direct dependency on domain implementations may violate architectural boundaries.';
+          'Allowed: pure domain types like entities/value objects. Not allowed: domain implementation details or feature-specific logic. Prefer depending on use case abstractions and keep boundaries clean.';
     } else if (violations.contains('CORE_TO_FEATURE')) {
       trReason =
           'Core katmanından feature katmanına doğrudan import tespit edildi. ';
@@ -96,8 +97,12 @@ final class _LayerViolationMessageBuilder {
     if (violationTypes.contains('PRESENTATION_TO_DOMAIN')) {
       parts.add('presentation -> domain');
     }
-    if (violationTypes.contains('CORE_TO_FEATURE')) parts.add('core -> feature');
-    if (violationTypes.contains('DENYLIST')) parts.add('denylist');
+    if (violationTypes.contains('CORE_TO_FEATURE')) {
+      parts.add('core -> feature');
+    }
+    if (violationTypes.contains('DENYLIST')) {
+      parts.add('denylist');
+    }
     return parts.isEmpty ? 'unknown' : parts.join(', ');
   }
 
@@ -108,8 +113,9 @@ final class _LayerViolationMessageBuilder {
     for (final h in hits) {
       final p = h.filePath;
       if (p == null || p.trim().isEmpty) continue;
-      final dir =
-          _LayerViolationEvidenceFormatter.directionForViolation(h.violationType);
+      final dir = _LayerViolationEvidenceFormatter.directionForViolation(
+        h.violationType,
+      );
       final key = '$p|${h.importLine}|$dir';
       if (!seen.add(key)) continue;
       items.add(h);
@@ -118,18 +124,14 @@ final class _LayerViolationMessageBuilder {
 
     if (items.isEmpty) return _Examples(tr: '—', en: '—');
 
-    final lines = items
-        .map((h) {
-          final p = h.filePath!;
-          final dir = _LayerViolationEvidenceFormatter.directionForViolation(
-            h.violationType,
-          );
-          return '\n- `$p` ($dir): `${h.importLine}`';
-        })
-        .join();
+    final lines = items.map((h) {
+      final p = h.filePath!;
+      final dir = _LayerViolationEvidenceFormatter.directionForViolation(
+        h.violationType,
+      );
+      return '\n- `$p` ($dir): `${h.importLine}`';
+    }).join();
 
     return _Examples(tr: lines, en: lines);
   }
 }
-
-

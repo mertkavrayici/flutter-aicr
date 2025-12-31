@@ -233,6 +233,82 @@ When `--ai` flag is enabled, AICR generates additional insights:
 
 **Note**: AI review is non-authoritative. The deterministic rule engine provides the source of truth.
 
+## CI/CD Integration
+
+### GitHub Actions
+
+AICR can be integrated into your GitHub Actions workflow to generate PR comments automatically.
+
+#### Setup
+
+1. Copy the workflow file to your repository:
+   ```bash
+   cp .github/workflows/aicr-pr-comment.yml <your-repo>/.github/workflows/
+   ```
+
+2. The workflow runs automatically on PR events (opened, synchronize, reopened).
+
+3. To enable AI review in CI (optional):
+   - Go to your repository Settings → Secrets and variables → Actions
+   - Add a new secret named `AICR_ENABLE_AI` with value `true`
+   - The workflow will use AI review when this secret is set
+
+#### Local Testing
+
+You can test the PR comment generation locally using the same commands that the CI workflow uses:
+
+```bash
+# Basic PR comment generation (without AI)
+cd aicr_cli
+dart run bin/aicr_cli.dart \
+  --repo your-repo-name \
+  --repo-path . \
+  --mode git_name_status \
+  --range origin/main...HEAD \
+  --format pr_comment \
+  --lang en \
+  --out pr_comment.md
+
+# With AI enabled
+dart run bin/aicr_cli.dart \
+  --repo your-repo-name \
+  --repo-path . \
+  --mode git_name_status \
+  --range origin/main...HEAD \
+  --format pr_comment \
+  --ai \
+  --lang en \
+  --out pr_comment.md
+```
+
+**Environment Variables (for local testing):**
+
+You can simulate the CI environment by setting environment variables:
+
+```bash
+# Disable AI (default)
+export AICR_AI=false
+dart run bin/aicr_cli.dart --format pr_comment --range origin/main...HEAD
+
+# Enable AI via environment variable (simulating CI secret)
+export AICR_AI=true
+dart run bin/aicr_cli.dart --format pr_comment --ai --range origin/main...HEAD
+```
+
+**Note**: The CLI uses the `--ai` flag directly. The `AICR_AI` environment variable in CI is used by the workflow script to conditionally pass the `--ai` flag to the CLI.
+
+#### Workflow Output
+
+The workflow generates a `pr_comment.md` file as an artifact that contains:
+- Status summary
+- Risk level and confidence
+- Signals table
+- Review recommendation
+- Top actionable findings
+- Categorized findings (AI and deterministic)
+
+The artifact is available in the Actions tab of your PR for 7 days.
+
 ## Development
 
 ### Running Tests

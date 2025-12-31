@@ -1,0 +1,78 @@
+name: AICR PR Comment
+
+on:
+  pull_request_target:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  aicr:
+    runs-on: ubuntu-latest
+    env:
+      AICR_POST_COMMENT: "true"
+      GITHUB_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+
+    steps:
+      - name: Checkout (PR head)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: Locate Dart package (pubspec.yaml)
+        id: locate
+        shell: bash
+        run: |
+          set -euo pipefail
+          PUBSPEC_PATH="$(find . -name pubspec.yaml -not -path '*/.dart_tool/*' -not -path '*/build/*' | head -n 1 || true)"
+          if [ -z "${PUBSPEC_PATH}" ]; then
+            echo "❌ pubspec.yaml not found anywhere in repo."
+            exit 66
+          fi
+          PKG_DIR="$(dirname "${PUBSPEC_PATH}")"
+          echo "pkg_dir=${PKG_DIR}" >> "$GITHUB_OUTPUT"
+          echo "✅ Using package dir: ${PKG_DIR}"
+
+      - name: Install dependencies
+        working-directory: ${{ steps.locate.outputs.pkg_dir }}
+        run: dart pub get
+
+      - name: Determine git range
+        id: range
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "range=${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Run AICR analysis (and post comment)
+        working-directory: ${{ steps.locate.outputs.pkg_dir }}
+        run: |
+          set -euo pipefail
+          EXTRA=""
+          if [ "${AICR_POST_COMMENT}" = "true" ]; then
+            EXTRA="--post-comment"
+          fi
+
+          dart run bin/aicr_cli.dart analyze \
+            --range "${{ steps.range.outputs.range }}" \
+            --format pr_comment \
+            --out pr_comment.md \
+            $EXTRA
+
+          echo "Generated files:"
+          ls -la
+
+      - name: Upload PR comment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-comment
+          path: ${{ steps.locate.outputs.pkg_dir }}/pr_comment.md

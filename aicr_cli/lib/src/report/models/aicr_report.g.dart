@@ -35,11 +35,40 @@ Map<String, dynamic> _$$InputInfoImplToJson(_$InputInfoImpl instance) =>
       'file_count': instance.fileCount,
     };
 
-_$AiInfoImpl _$$AiInfoImplFromJson(Map<String, dynamic> json) =>
-    _$AiInfoImpl(enabled: json['enabled'] as bool);
+_$AiInfoImpl _$$AiInfoImplFromJson(Map<String, dynamic> json) => _$AiInfoImpl(
+  enabled: json['enabled'] as bool,
+  mode: json['mode'] as String? ?? 'noop',
+);
 
 Map<String, dynamic> _$$AiInfoImplToJson(_$AiInfoImpl instance) =>
-    <String, dynamic>{'enabled': instance.enabled};
+    <String, dynamic>{'enabled': instance.enabled, 'mode': instance.mode};
+
+_$CommentInfoImpl _$$CommentInfoImplFromJson(Map<String, dynamic> json) =>
+    _$CommentInfoImpl(
+      postComment: json['post_comment'] as bool? ?? false,
+      commentMode: json['comment_mode'] as String? ?? 'update',
+      marker: json['marker'] as String? ?? 'AICR_COMMENT',
+    );
+
+Map<String, dynamic> _$$CommentInfoImplToJson(_$CommentInfoImpl instance) =>
+    <String, dynamic>{
+      'post_comment': instance.postComment,
+      'comment_mode': instance.commentMode,
+      'marker': instance.marker,
+    };
+
+_$CiInfoImpl _$$CiInfoImplFromJson(Map<String, dynamic> json) => _$CiInfoImpl(
+  postComment: json['post_comment'] as bool? ?? false,
+  commentMode: json['comment_mode'] as String? ?? 'update',
+  marker: json['marker'] as String? ?? 'AICR_COMMENT',
+);
+
+Map<String, dynamic> _$$CiInfoImplToJson(_$CiInfoImpl instance) =>
+    <String, dynamic>{
+      'post_comment': instance.postComment,
+      'comment_mode': instance.commentMode,
+      'marker': instance.marker,
+    };
 
 _$MetaImpl _$$MetaImplFromJson(Map<String, dynamic> json) => _$MetaImpl(
   tool: ToolInfo.fromJson(json['tool'] as Map<String, dynamic>),
@@ -48,6 +77,12 @@ _$MetaImpl _$$MetaImplFromJson(Map<String, dynamic> json) => _$MetaImpl(
   repo: RepoInfo.fromJson(json['repo'] as Map<String, dynamic>),
   input: InputInfo.fromJson(json['input'] as Map<String, dynamic>),
   ai: AiInfo.fromJson(json['ai'] as Map<String, dynamic>),
+  comment: json['comment'] == null
+      ? null
+      : CommentInfo.fromJson(json['comment'] as Map<String, dynamic>),
+  ci: json['ci'] == null
+      ? null
+      : CiInfo.fromJson(json['ci'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$$MetaImplToJson(_$MetaImpl instance) =>
@@ -58,6 +93,8 @@ Map<String, dynamic> _$$MetaImplToJson(_$MetaImpl instance) =>
       'repo': instance.repo,
       'input': instance.input,
       'ai': instance.ai,
+      'comment': instance.comment,
+      'ci': instance.ci,
     };
 
 _$CountsImpl _$$CountsImplFromJson(Map<String, dynamic> json) => _$CountsImpl(

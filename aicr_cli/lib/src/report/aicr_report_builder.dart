@@ -9,8 +9,12 @@ final class AicrReportBuilder {
   final String diffText;
   final List<FileEntry> files;
   final bool aiEnabled;
+  final String aiMode;
   final List<RuleResult> ruleResults;
   final List<AicrFinding> aiFindings;
+  final bool postComment;
+  final String commentMode;
+  final String commentMarker;
 
   AicrReportBuilder({
     List<AicrFinding>? aiFindings,
@@ -18,7 +22,11 @@ final class AicrReportBuilder {
     required this.diffText,
     required this.files,
     required this.aiEnabled,
+    this.aiMode = 'noop',
     required this.ruleResults,
+    this.postComment = false,
+    this.commentMode = 'update',
+    this.commentMarker = 'AICR_COMMENT',
   }) : aiFindings = aiFindings ?? const [];
 
   AicrReport build() {
@@ -33,8 +41,12 @@ final class AicrReportBuilder {
       createdAt: createdAt,
       repoName: repoName,
       aiEnabled: aiEnabled,
+      aiMode: aiMode,
       diffHash: diffHash,
       fileCount: files.length,
+      postComment: postComment,
+      commentMode: commentMode,
+      marker: commentMarker,
     );
 
     final passCount = ruleResults
@@ -177,8 +189,10 @@ final class AicrReportBuilder {
       'large_change_set' => AicrCategory.dx,
       'ui_change_suggests_golden_tests' => AicrCategory.quality,
       'secret_or_env_exposure' => AicrCategory.security,
+      'diff_secret_patterns' => AicrCategory.security,
       'layer_violation' => AicrCategory.architecture,
       'large_diff_suggests_split' => AicrCategory.performance,
+      'public_api_change_requires_docs' => AicrCategory.dx,
       _ => AicrCategory.quality,
     };
   }

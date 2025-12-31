@@ -5,5 +5,3 @@ final class SignalsTableSection {
     SharedMarkdownBlocks.signalsTableBlock(md, report, aiCount: aiCount);
   }
 }
-
-

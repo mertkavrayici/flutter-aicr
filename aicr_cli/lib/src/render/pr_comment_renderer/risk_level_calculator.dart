@@ -8,15 +8,17 @@ final class _RiskLevelCalculator {
   String calculate(AicrReport report) {
     final fail = report.summary.ruleResults.fail;
     final warn = report.summary.ruleResults.warn;
-    final criticalCount =
-        report.findings.where((f) => f.severity == AicrSeverity.critical).length;
+    final criticalCount = report.findings
+        .where((f) => f.severity == AicrSeverity.critical)
+        .length;
 
     if (fail > 0 || criticalCount > 0) {
       return '🔴 **High**';
     }
     if (warn > 0) {
-      final warningCount =
-          report.findings.where((f) => f.severity == AicrSeverity.warning).length;
+      final warningCount = report.findings
+          .where((f) => f.severity == AicrSeverity.warning)
+          .length;
       if (warningCount >= 3) {
         return '🟡 **Medium**';
       }
@@ -25,5 +27,3 @@ final class _RiskLevelCalculator {
     return '🟢 **Low**';
   }
 }
-
-

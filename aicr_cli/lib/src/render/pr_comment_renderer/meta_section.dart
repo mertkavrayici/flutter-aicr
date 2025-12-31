@@ -14,7 +14,15 @@ final class MetaSection {
       riskLevel: riskLevel,
       overallConfidenceText: overallConfidenceText,
     );
+    _renderCiInfo(md, report);
+  }
+
+  void _renderCiInfo(MarkdownBuilder md, AicrReport report) {
+    final ci = report.meta.ci;
+    if (ci == null) return;
+
+    md.p(
+      '**CI:** postComment=${ci.postComment} · mode=${ci.commentMode} · marker=${ci.marker}',
+    );
   }
 }
-
-

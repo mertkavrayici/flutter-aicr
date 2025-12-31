@@ -1,9 +1,15 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+
 import '../ai/ai.dart';
 import '../diff/diff_parser.dart';
 import '../finding/aicr_finding.dart';
 import '../report/aicr_report.dart';
 import '../report/aicr_report_builder.dart';
 import '../rules/rules.dart';
+import '../util/aicr_logger.dart';
+import '../profile/aicr_project_profile.dart';
 
 final class AicrEngine {
   static bool _isGeneratedDartFilePath(String path) {
@@ -15,13 +21,26 @@ final class AicrEngine {
   static Future<AicrReport> analyze({
     required String diffText,
     required bool aiEnabled,
+    AiMode aiMode = AiMode.noop,
     required String repoName,
     required AiLanguage language,
-    List<FileEntry>? files, // ✅ CLI’dan gelebilir
-    AiReviewer? aiReviewer, // ✅ opsiyonel, default Noop (legacy)
+    List<FileEntry>? files, // ✅ CLI'dan gelebilir
+    AiReviewer? aiReviewer,
     AiReviewService?
     aiReviewService, // ✅ opsiyonel, default DeterministicAiReviewService
+    AicrLogger logger = const AicrLogger.none(),
+    AicrProjectProfile projectProfile = AicrProjectProfile.empty,
+    bool postComment = false,
+    String commentMode = 'update',
+    String commentMarker = 'AICR_COMMENT',
   }) async {
+    final effectiveAiMode = aiEnabled ? aiMode : AiMode.noop;
+    final reviewer = aiReviewer ??
+        AiReviewerFactory().create(
+          effectiveAiMode,
+          logger: logger,
+          projectProfile: projectProfile,
+        );
     // 1) Files’ı belirle: CLI verdiyse gerçek, yoksa diffText fallback
     final resolvedFiles = (files != null && files.isNotEmpty)
         ? files
@@ -50,11 +69,13 @@ final class AicrEngine {
     final rules = <AicrRule>[
       BlocChangeRequiresTestsRule(),
       SecretOrEnvExposureRule(),
+      DiffSecretPatternsRule(),
       HighEntropySecretRule(),
       LargeChangeSetRule(warnFileThreshold: 15),
       UiChangeSuggestsGoldenTestsRule(),
       LayerViolationRule(),
       LargeDiffSuggestsSplitRule(),
+      PublicApiChangeRequiresDocsRule(),
     ];
 
     // 4) Evaluate rules -> RuleResult listesi
@@ -68,8 +89,12 @@ final class AicrEngine {
       diffText: diffText,
       files: resolvedFiles,
       aiEnabled: aiEnabled,
+      aiMode: effectiveAiMode.name,
       ruleResults: ruleResults,
       aiFindings: const [], // Will be populated from AiReview if enabled
+      postComment: postComment,
+      commentMode: commentMode,
+      commentMarker: commentMarker,
     );
 
     final reportWithoutAi = builder.build();
@@ -79,32 +104,55 @@ final class AicrEngine {
     List<AicrFinding> aiFindings = const [];
 
     if (aiEnabled) {
-      final service = aiReviewService ?? DeterministicAiReviewService();
-      try {
-        aiReview = await service.generate(
-          diffText: diffText,
-          report: reportWithoutAi,
-          language: language,
-        );
-        // Convert AiReview to findings for compatibility
-        aiFindings = AiReviewMapper.toFindings(aiReview);
-
-        // Also keep legacy AiReviewer findings if provided (for backward compatibility)
-        if (aiReviewer != null && aiReviewer is! NoopAiReviewer) {
-          final legacyFindings = await _safeAiReview(
-            reviewer: aiReviewer,
-            input: AiReviewInput(
-              repoName: repoName,
-              diffText: diffText,
-              changedFiles: changedFiles,
-            ),
+      // AI findings must ONLY come from AiReviewer.
+      // (Noop mode => empty list)
+      //
+      // We may still compute `aiReview` (report-level summary) for non-noop
+      // modes, but we DO NOT map it into AicrFinding list.
+      if (effectiveAiMode != AiMode.noop) {
+        final service = aiReviewService ?? DeterministicAiReviewService();
+        try {
+          aiReview = await service.generate(
+            diffText: diffText,
+            report: reportWithoutAi,
+            language: language,
           );
-          // Merge with AiReview findings
-          aiFindings = [...aiFindings, ...legacyFindings];
+        } catch (e) {
+          logger.warn('AiReviewService failed: $e');
+          aiReview = null;
         }
-      } catch (_) {
-        // AI review generation failed, continue without it
+      } else {
+        aiReview = null;
       }
+
+      final diffHash = sha256.convert(utf8.encode(diffText)).toString();
+
+      final result = await _safeAiReview(
+        reviewer: reviewer,
+        request: AiReviewRequest(
+          repoName: repoName,
+          diffHash: diffHash,
+          diffText: diffText,
+          maxFindings: 10,
+          language: language.code,
+          maxInputChars: 120_000,
+          maxOutputTokens: 2_000,
+          timeoutMs: 15_000,
+        ),
+        logger: logger,
+      );
+
+      final aiCount = result.findings.length;
+      logger.info('AI: $aiCount findings (mode: ${effectiveAiMode.name})');
+      if (logger.verbose) {
+        logger.info('AI: truncated=${result.truncated}');
+        final err = result.errorMessage;
+        if (err != null && err.trim().isNotEmpty) {
+          logger.info('AI: error=${_sanitizeAiError(err)}');
+        }
+      }
+
+      aiFindings = result.findings;
     }
 
     // 7) Build final report with AI review and findings
@@ -123,16 +171,32 @@ final class AicrEngine {
     );
   }
 
-  static Future<List<AicrFinding>> _safeAiReview({
+  static Future<AiReviewResult> _safeAiReview({
     required AiReviewer reviewer,
-    required AiReviewInput input,
+    required AiReviewRequest request,
+    AicrLogger logger = const AicrLogger.none(),
   }) async {
     try {
-      return await reviewer.review(input);
-    } catch (_) {
+      return await reviewer.review(request);
+    } catch (e) {
+      logger.warn('AiReviewer failed: $e');
       // AI katmanı "best effort": analyze'ı asla patlatmasın.
-      return const <AicrFinding>[];
+      return AiReviewResult.error(errorMessage: e.toString());
     }
+  }
+
+  static String _sanitizeAiError(String input) {
+    // Collapse whitespace (avoid multi-line logs).
+    var s = input.replaceAll(RegExp(r'\s+'), ' ').trim();
+    // Redact any accidental bearer token-looking fragments.
+    s = s.replaceAll(
+      RegExp(r'Bearer\s+[^\\s]+', caseSensitive: false),
+      'Bearer ***REDACTED***',
+    );
+    // Clip to keep logs short.
+    const maxLen = 300;
+    if (s.length > maxLen) s = '${s.substring(0, maxLen)}...';
+    return s;
   }
 
   /// Merges deterministic and AI findings with intelligent deduplication.
@@ -146,62 +210,109 @@ final class AicrEngine {
     required List<AicrFinding> deterministic,
     required List<AicrFinding> ai,
   }) {
-    // Start with deterministic findings (source of truth)
-    final merged = <AicrFinding>[...deterministic];
+    // Deterministic findings are the source of truth.
+    // AI findings are supplemental and must not duplicate deterministic topics.
+    final det = deterministic;
 
-    // Process each AI finding
-    for (final aiFinding in ai) {
-      // AI cannot create FAIL alone - skip critical severity findings
-      if (aiFinding.severity == AicrSeverity.critical) {
+    // AI cannot create FAIL alone:
+    // if AI returns critical, downgrade to warning (deterministic critical stays as-is).
+    final aiNormalized = ai
+        .map(
+          (f) => f.severity == AicrSeverity.critical
+              ? f.copyWith(severity: AicrSeverity.warning)
+              : f,
+        )
+        .toList(growable: false);
+
+    // Topic dedupe (deterministic > AI):
+    // - same ruleId (sourceId) OR same normalized title => keep deterministic, drop AI
+    final merged = <AicrFinding>[
+      ...det,
+      ..._filterAiByTopicDedup(deterministic: det, ai: aiNormalized),
+    ];
+
+    // Duplicate control (NEVER by `id`):
+    // signature key:
+    // - source
+    // - category, severity, title
+    // - messageEn (normalized: trim/lowercase/collapse spaces)
+    // - filePath (including null)
+    //
+    // This also applies to report-level findings where filePath is null
+    // (e.g. `ai_review`, `ai_review_action`).
+    return _dedupeBySignature(merged);
+  }
+
+  static String _normalizeTitle(String s) {
+    // Lowercase, trim, strip punctuation into spaces, collapse whitespace.
+    final lower = s.toLowerCase().trim();
+    final noPunct = lower.replaceAll(RegExp(r'[^\w\s]+'), ' ');
+    return noPunct.replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
+  static List<AicrFinding> _filterAiByTopicDedup({
+    required List<AicrFinding> deterministic,
+    required List<AicrFinding> ai,
+  }) {
+    final detRuleIds = deterministic
+        .map((f) => (f.sourceId ?? '').trim())
+        .where((s) => s.isNotEmpty)
+        .toSet();
+
+    final seenTitles = <String>{};
+    for (final f in deterministic) {
+      final t = _normalizeTitle(f.title);
+      if (t.isNotEmpty) seenTitles.add(t);
+    }
+
+    final kept = <AicrFinding>[];
+    for (final f in ai) {
+      // If AI reuses a deterministic ruleId, deterministic must win.
+      final sourceId = (f.sourceId ?? '').trim();
+      if (sourceId.isNotEmpty && detRuleIds.contains(sourceId)) {
         continue;
       }
 
-      // Try to find matching deterministic finding to enrich
-      bool enriched = false;
-      for (int i = 0; i < merged.length; i++) {
-        final detFinding = merged[i];
-
-        // Check if AI finding matches deterministic finding
-        if (aiFinding.isSimilarTo(detFinding)) {
-          // Enrich deterministic finding with AI structured fields
-          merged[i] = _enrichFinding(detFinding, aiFinding);
-          enriched = true;
-          break;
-        }
+      final t = _normalizeTitle(f.title);
+      if (t.isNotEmpty && seenTitles.contains(t)) {
+        continue;
       }
 
-      // If no match found, add AI finding as new (only if WARN or lower)
-      if (!enriched && aiFinding.severity != AicrSeverity.critical) {
-        merged.add(aiFinding);
+      // Also dedupe within AI by normalized title (keep first).
+      if (t.isNotEmpty && !seenTitles.add(t)) {
+        continue;
       }
+
+      kept.add(f);
     }
 
-    // Final deduplication by ID (fallback)
-    return _dedupeById(merged);
+    return kept;
   }
 
-  /// Enriches a deterministic finding with AI structured fields.
-  /// Preserves deterministic severity and other fields, adds AI's structured data.
-  static AicrFinding _enrichFinding(AicrFinding deterministic, AicrFinding ai) {
-    return deterministic.copyWith(
-      // Preserve deterministic severity - AI cannot change it
-      // Add AI structured fields if not already present
-      area: deterministic.area ?? ai.area,
-      risk: deterministic.risk ?? ai.risk,
-      reason: deterministic.reason ?? ai.reason,
-      suggestedAction: deterministic.suggestedAction ?? ai.suggestedAction,
-      confidence: deterministic.confidence ?? ai.confidence,
-      // Optionally enrich messages if AI provides better context
-      // (but keep deterministic messages as primary)
-    );
+  static String _normalizeMsgEn(String s) =>
+      s.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
+
+  static String? _normalizePath(String? p) {
+    if (p == null) return null;
+    final n = p.replaceAll('\\', '/').trim();
+    return n.isEmpty ? null : n.toLowerCase();
   }
 
-  static List<AicrFinding> _dedupeById(List<AicrFinding> items) {
+  static List<AicrFinding> _dedupeBySignature(List<AicrFinding> items) {
     final seen = <String>{};
     final out = <AicrFinding>[];
 
     for (final f in items) {
-      if (seen.add(f.id)) {
+      final source = f.source?.name ?? 'null';
+      final category = f.category.name;
+      final severity = f.severity.name;
+      final title = f.title;
+      final msgEn = _normalizeMsgEn(f.messageEn);
+      final file = _normalizePath(f.filePath); // may be null
+
+      final key = '$source|$category|$severity|$title|$msgEn|${file ?? 'null'}';
+
+      if (seen.add(key)) {
         out.add(f);
       }
     }

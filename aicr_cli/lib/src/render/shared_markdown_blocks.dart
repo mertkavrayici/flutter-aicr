@@ -16,7 +16,7 @@ final class SharedMarkdownBlocks {
       '**Repo:** ${report.meta.repoName} · '
       '**Run:** $runIdShort · '
       '**Files:** ${report.meta.fileCount} · '
-      '**AI:** ${report.meta.aiEnabled ? 'ON' : 'OFF'} · '
+      '**AI:** ${report.meta.aiEnabled ? 'ON' : 'OFF'} (mode: ${report.meta.aiMode}) · '
       '**Diff:** `$diffHashShort`',
     );
   }
@@ -51,5 +51,3 @@ final class SharedMarkdownBlocks {
     );
   }
 }
-
-

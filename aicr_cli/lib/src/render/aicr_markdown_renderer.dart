@@ -16,7 +16,9 @@ final class AicrMarkdownRenderer {
     b.writeln('- Created: `${report.meta.createdAt}`');
     b.writeln('- Run: `${report.meta.runId}`');
     b.writeln('- Diff hash: `${report.meta.diffHash}`');
-    b.writeln('- AI enabled: `${report.meta.aiEnabled}`');
+    b.writeln(
+      '- AI: `${report.meta.aiEnabled ? 'ON' : 'OFF'}` (mode: `${report.meta.aiMode}`)',
+    );
     b.writeln('- File count: `${report.meta.fileCount}`');
     b.writeln();
 
@@ -78,7 +80,8 @@ final class AicrMarkdownRenderer {
       b.writeln();
 
       for (final f in list) {
-        b.writeln('- ${_severityEmoji(f.severity)} **${f.title}**');
+        final src = f.source == AicrFindingSource.ai ? '[ai]' : '[det]';
+        b.writeln('- ${_severityEmoji(f.severity)} **${f.title}** $src');
         if (f.filePath != null) {
           b.writeln('  - Location: `${f.filePath}`');
         }

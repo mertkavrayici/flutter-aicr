@@ -570,6 +570,7 @@ AiInfo _$AiInfoFromJson(Map<String, dynamic> json) {
 mixin _$AiInfo {
   @JsonKey(name: 'enabled')
   bool get enabled => throw _privateConstructorUsedError;
+  String get mode => throw _privateConstructorUsedError;
 
   /// Serializes this AiInfo to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -585,7 +586,7 @@ abstract class $AiInfoCopyWith<$Res> {
   factory $AiInfoCopyWith(AiInfo value, $Res Function(AiInfo) then) =
       _$AiInfoCopyWithImpl<$Res, AiInfo>;
   @useResult
-  $Res call({@JsonKey(name: 'enabled') bool enabled});
+  $Res call({@JsonKey(name: 'enabled') bool enabled, String mode});
 }
 
 /// @nodoc
@@ -602,13 +603,17 @@ class _$AiInfoCopyWithImpl<$Res, $Val extends AiInfo>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? enabled = null}) {
+  $Res call({Object? enabled = null, Object? mode = null}) {
     return _then(
       _value.copyWith(
             enabled: null == enabled
                 ? _value.enabled
                 : enabled // ignore: cast_nullable_to_non_nullable
                       as bool,
+            mode: null == mode
+                ? _value.mode
+                : mode // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -623,7 +628,7 @@ abstract class _$$AiInfoImplCopyWith<$Res> implements $AiInfoCopyWith<$Res> {
   ) = __$$AiInfoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({@JsonKey(name: 'enabled') bool enabled});
+  $Res call({@JsonKey(name: 'enabled') bool enabled, String mode});
 }
 
 /// @nodoc
@@ -639,13 +644,17 @@ class __$$AiInfoImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? enabled = null}) {
+  $Res call({Object? enabled = null, Object? mode = null}) {
     return _then(
       _$AiInfoImpl(
         enabled: null == enabled
             ? _value.enabled
             : enabled // ignore: cast_nullable_to_non_nullable
                   as bool,
+        mode: null == mode
+            ? _value.mode
+            : mode // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -654,7 +663,10 @@ class __$$AiInfoImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$AiInfoImpl implements _AiInfo {
-  const _$AiInfoImpl({@JsonKey(name: 'enabled') required this.enabled});
+  const _$AiInfoImpl({
+    @JsonKey(name: 'enabled') required this.enabled,
+    this.mode = 'noop',
+  });
 
   factory _$AiInfoImpl.fromJson(Map<String, dynamic> json) =>
       _$$AiInfoImplFromJson(json);
@@ -662,10 +674,13 @@ class _$AiInfoImpl implements _AiInfo {
   @override
   @JsonKey(name: 'enabled')
   final bool enabled;
+  @override
+  @JsonKey()
+  final String mode;
 
   @override
   String toString() {
-    return 'AiInfo(enabled: $enabled)';
+    return 'AiInfo(enabled: $enabled, mode: $mode)';
   }
 
   @override
@@ -673,12 +688,13 @@ class _$AiInfoImpl implements _AiInfo {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AiInfoImpl &&
-            (identical(other.enabled, enabled) || other.enabled == enabled));
+            (identical(other.enabled, enabled) || other.enabled == enabled) &&
+            (identical(other.mode, mode) || other.mode == mode));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, enabled);
+  int get hashCode => Object.hash(runtimeType, enabled, mode);
 
   /// Create a copy of AiInfo
   /// with the given fields replaced by the non-null parameter values.
@@ -697,6 +713,7 @@ class _$AiInfoImpl implements _AiInfo {
 abstract class _AiInfo implements AiInfo {
   const factory _AiInfo({
     @JsonKey(name: 'enabled') required final bool enabled,
+    final String mode,
   }) = _$AiInfoImpl;
 
   factory _AiInfo.fromJson(Map<String, dynamic> json) = _$AiInfoImpl.fromJson;
@@ -704,12 +721,435 @@ abstract class _AiInfo implements AiInfo {
   @override
   @JsonKey(name: 'enabled')
   bool get enabled;
+  @override
+  String get mode;
 
   /// Create a copy of AiInfo
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AiInfoImplCopyWith<_$AiInfoImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+CommentInfo _$CommentInfoFromJson(Map<String, dynamic> json) {
+  return _CommentInfo.fromJson(json);
+}
+
+/// @nodoc
+mixin _$CommentInfo {
+  @JsonKey(name: 'post_comment')
+  bool get postComment => throw _privateConstructorUsedError;
+  @JsonKey(name: 'comment_mode')
+  String get commentMode => throw _privateConstructorUsedError;
+  String get marker => throw _privateConstructorUsedError;
+
+  /// Serializes this CommentInfo to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of CommentInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $CommentInfoCopyWith<CommentInfo> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $CommentInfoCopyWith<$Res> {
+  factory $CommentInfoCopyWith(
+    CommentInfo value,
+    $Res Function(CommentInfo) then,
+  ) = _$CommentInfoCopyWithImpl<$Res, CommentInfo>;
+  @useResult
+  $Res call({
+    @JsonKey(name: 'post_comment') bool postComment,
+    @JsonKey(name: 'comment_mode') String commentMode,
+    String marker,
+  });
+}
+
+/// @nodoc
+class _$CommentInfoCopyWithImpl<$Res, $Val extends CommentInfo>
+    implements $CommentInfoCopyWith<$Res> {
+  _$CommentInfoCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of CommentInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? postComment = null,
+    Object? commentMode = null,
+    Object? marker = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            postComment: null == postComment
+                ? _value.postComment
+                : postComment // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            commentMode: null == commentMode
+                ? _value.commentMode
+                : commentMode // ignore: cast_nullable_to_non_nullable
+                      as String,
+            marker: null == marker
+                ? _value.marker
+                : marker // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$CommentInfoImplCopyWith<$Res>
+    implements $CommentInfoCopyWith<$Res> {
+  factory _$$CommentInfoImplCopyWith(
+    _$CommentInfoImpl value,
+    $Res Function(_$CommentInfoImpl) then,
+  ) = __$$CommentInfoImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(name: 'post_comment') bool postComment,
+    @JsonKey(name: 'comment_mode') String commentMode,
+    String marker,
+  });
+}
+
+/// @nodoc
+class __$$CommentInfoImplCopyWithImpl<$Res>
+    extends _$CommentInfoCopyWithImpl<$Res, _$CommentInfoImpl>
+    implements _$$CommentInfoImplCopyWith<$Res> {
+  __$$CommentInfoImplCopyWithImpl(
+    _$CommentInfoImpl _value,
+    $Res Function(_$CommentInfoImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of CommentInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? postComment = null,
+    Object? commentMode = null,
+    Object? marker = null,
+  }) {
+    return _then(
+      _$CommentInfoImpl(
+        postComment: null == postComment
+            ? _value.postComment
+            : postComment // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        commentMode: null == commentMode
+            ? _value.commentMode
+            : commentMode // ignore: cast_nullable_to_non_nullable
+                  as String,
+        marker: null == marker
+            ? _value.marker
+            : marker // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$CommentInfoImpl implements _CommentInfo {
+  const _$CommentInfoImpl({
+    @JsonKey(name: 'post_comment') this.postComment = false,
+    @JsonKey(name: 'comment_mode') this.commentMode = 'update',
+    this.marker = 'AICR_COMMENT',
+  });
+
+  factory _$CommentInfoImpl.fromJson(Map<String, dynamic> json) =>
+      _$$CommentInfoImplFromJson(json);
+
+  @override
+  @JsonKey(name: 'post_comment')
+  final bool postComment;
+  @override
+  @JsonKey(name: 'comment_mode')
+  final String commentMode;
+  @override
+  @JsonKey()
+  final String marker;
+
+  @override
+  String toString() {
+    return 'CommentInfo(postComment: $postComment, commentMode: $commentMode, marker: $marker)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$CommentInfoImpl &&
+            (identical(other.postComment, postComment) ||
+                other.postComment == postComment) &&
+            (identical(other.commentMode, commentMode) ||
+                other.commentMode == commentMode) &&
+            (identical(other.marker, marker) || other.marker == marker));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, postComment, commentMode, marker);
+
+  /// Create a copy of CommentInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CommentInfoImplCopyWith<_$CommentInfoImpl> get copyWith =>
+      __$$CommentInfoImplCopyWithImpl<_$CommentInfoImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$CommentInfoImplToJson(this);
+  }
+}
+
+abstract class _CommentInfo implements CommentInfo {
+  const factory _CommentInfo({
+    @JsonKey(name: 'post_comment') final bool postComment,
+    @JsonKey(name: 'comment_mode') final String commentMode,
+    final String marker,
+  }) = _$CommentInfoImpl;
+
+  factory _CommentInfo.fromJson(Map<String, dynamic> json) =
+      _$CommentInfoImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'post_comment')
+  bool get postComment;
+  @override
+  @JsonKey(name: 'comment_mode')
+  String get commentMode;
+  @override
+  String get marker;
+
+  /// Create a copy of CommentInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$CommentInfoImplCopyWith<_$CommentInfoImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+CiInfo _$CiInfoFromJson(Map<String, dynamic> json) {
+  return _CiInfo.fromJson(json);
+}
+
+/// @nodoc
+mixin _$CiInfo {
+  @JsonKey(name: 'post_comment')
+  bool get postComment => throw _privateConstructorUsedError;
+  @JsonKey(name: 'comment_mode')
+  String get commentMode => throw _privateConstructorUsedError;
+  String get marker => throw _privateConstructorUsedError;
+
+  /// Serializes this CiInfo to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of CiInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $CiInfoCopyWith<CiInfo> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $CiInfoCopyWith<$Res> {
+  factory $CiInfoCopyWith(CiInfo value, $Res Function(CiInfo) then) =
+      _$CiInfoCopyWithImpl<$Res, CiInfo>;
+  @useResult
+  $Res call({
+    @JsonKey(name: 'post_comment') bool postComment,
+    @JsonKey(name: 'comment_mode') String commentMode,
+    String marker,
+  });
+}
+
+/// @nodoc
+class _$CiInfoCopyWithImpl<$Res, $Val extends CiInfo>
+    implements $CiInfoCopyWith<$Res> {
+  _$CiInfoCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of CiInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? postComment = null,
+    Object? commentMode = null,
+    Object? marker = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            postComment: null == postComment
+                ? _value.postComment
+                : postComment // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            commentMode: null == commentMode
+                ? _value.commentMode
+                : commentMode // ignore: cast_nullable_to_non_nullable
+                      as String,
+            marker: null == marker
+                ? _value.marker
+                : marker // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$CiInfoImplCopyWith<$Res> implements $CiInfoCopyWith<$Res> {
+  factory _$$CiInfoImplCopyWith(
+    _$CiInfoImpl value,
+    $Res Function(_$CiInfoImpl) then,
+  ) = __$$CiInfoImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(name: 'post_comment') bool postComment,
+    @JsonKey(name: 'comment_mode') String commentMode,
+    String marker,
+  });
+}
+
+/// @nodoc
+class __$$CiInfoImplCopyWithImpl<$Res>
+    extends _$CiInfoCopyWithImpl<$Res, _$CiInfoImpl>
+    implements _$$CiInfoImplCopyWith<$Res> {
+  __$$CiInfoImplCopyWithImpl(
+    _$CiInfoImpl _value,
+    $Res Function(_$CiInfoImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of CiInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? postComment = null,
+    Object? commentMode = null,
+    Object? marker = null,
+  }) {
+    return _then(
+      _$CiInfoImpl(
+        postComment: null == postComment
+            ? _value.postComment
+            : postComment // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        commentMode: null == commentMode
+            ? _value.commentMode
+            : commentMode // ignore: cast_nullable_to_non_nullable
+                  as String,
+        marker: null == marker
+            ? _value.marker
+            : marker // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$CiInfoImpl implements _CiInfo {
+  const _$CiInfoImpl({
+    @JsonKey(name: 'post_comment') this.postComment = false,
+    @JsonKey(name: 'comment_mode') this.commentMode = 'update',
+    this.marker = 'AICR_COMMENT',
+  });
+
+  factory _$CiInfoImpl.fromJson(Map<String, dynamic> json) =>
+      _$$CiInfoImplFromJson(json);
+
+  @override
+  @JsonKey(name: 'post_comment')
+  final bool postComment;
+  @override
+  @JsonKey(name: 'comment_mode')
+  final String commentMode;
+  @override
+  @JsonKey()
+  final String marker;
+
+  @override
+  String toString() {
+    return 'CiInfo(postComment: $postComment, commentMode: $commentMode, marker: $marker)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$CiInfoImpl &&
+            (identical(other.postComment, postComment) ||
+                other.postComment == postComment) &&
+            (identical(other.commentMode, commentMode) ||
+                other.commentMode == commentMode) &&
+            (identical(other.marker, marker) || other.marker == marker));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, postComment, commentMode, marker);
+
+  /// Create a copy of CiInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CiInfoImplCopyWith<_$CiInfoImpl> get copyWith =>
+      __$$CiInfoImplCopyWithImpl<_$CiInfoImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$CiInfoImplToJson(this);
+  }
+}
+
+abstract class _CiInfo implements CiInfo {
+  const factory _CiInfo({
+    @JsonKey(name: 'post_comment') final bool postComment,
+    @JsonKey(name: 'comment_mode') final String commentMode,
+    final String marker,
+  }) = _$CiInfoImpl;
+
+  factory _CiInfo.fromJson(Map<String, dynamic> json) = _$CiInfoImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'post_comment')
+  bool get postComment;
+  @override
+  @JsonKey(name: 'comment_mode')
+  String get commentMode;
+  @override
+  String get marker;
+
+  /// Create a copy of CiInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$CiInfoImplCopyWith<_$CiInfoImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -731,6 +1171,10 @@ mixin _$Meta {
   InputInfo get input => throw _privateConstructorUsedError;
   @JsonKey(name: 'ai')
   AiInfo get ai => throw _privateConstructorUsedError;
+  @JsonKey(name: 'comment')
+  CommentInfo? get comment => throw _privateConstructorUsedError;
+  @JsonKey(name: 'ci')
+  CiInfo? get ci => throw _privateConstructorUsedError;
 
   /// Serializes this Meta to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -753,12 +1197,16 @@ abstract class $MetaCopyWith<$Res> {
     @JsonKey(name: 'repo') RepoInfo repo,
     @JsonKey(name: 'input') InputInfo input,
     @JsonKey(name: 'ai') AiInfo ai,
+    @JsonKey(name: 'comment') CommentInfo? comment,
+    @JsonKey(name: 'ci') CiInfo? ci,
   });
 
   $ToolInfoCopyWith<$Res> get tool;
   $RepoInfoCopyWith<$Res> get repo;
   $InputInfoCopyWith<$Res> get input;
   $AiInfoCopyWith<$Res> get ai;
+  $CommentInfoCopyWith<$Res>? get comment;
+  $CiInfoCopyWith<$Res>? get ci;
 }
 
 /// @nodoc
@@ -782,6 +1230,8 @@ class _$MetaCopyWithImpl<$Res, $Val extends Meta>
     Object? repo = null,
     Object? input = null,
     Object? ai = null,
+    Object? comment = freezed,
+    Object? ci = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -809,6 +1259,14 @@ class _$MetaCopyWithImpl<$Res, $Val extends Meta>
                 ? _value.ai
                 : ai // ignore: cast_nullable_to_non_nullable
                       as AiInfo,
+            comment: freezed == comment
+                ? _value.comment
+                : comment // ignore: cast_nullable_to_non_nullable
+                      as CommentInfo?,
+            ci: freezed == ci
+                ? _value.ci
+                : ci // ignore: cast_nullable_to_non_nullable
+                      as CiInfo?,
           )
           as $Val,
     );
@@ -853,6 +1311,34 @@ class _$MetaCopyWithImpl<$Res, $Val extends Meta>
       return _then(_value.copyWith(ai: value) as $Val);
     });
   }
+
+  /// Create a copy of Meta
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $CommentInfoCopyWith<$Res>? get comment {
+    if (_value.comment == null) {
+      return null;
+    }
+
+    return $CommentInfoCopyWith<$Res>(_value.comment!, (value) {
+      return _then(_value.copyWith(comment: value) as $Val);
+    });
+  }
+
+  /// Create a copy of Meta
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $CiInfoCopyWith<$Res>? get ci {
+    if (_value.ci == null) {
+      return null;
+    }
+
+    return $CiInfoCopyWith<$Res>(_value.ci!, (value) {
+      return _then(_value.copyWith(ci: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -870,6 +1356,8 @@ abstract class _$$MetaImplCopyWith<$Res> implements $MetaCopyWith<$Res> {
     @JsonKey(name: 'repo') RepoInfo repo,
     @JsonKey(name: 'input') InputInfo input,
     @JsonKey(name: 'ai') AiInfo ai,
+    @JsonKey(name: 'comment') CommentInfo? comment,
+    @JsonKey(name: 'ci') CiInfo? ci,
   });
 
   @override
@@ -880,6 +1368,10 @@ abstract class _$$MetaImplCopyWith<$Res> implements $MetaCopyWith<$Res> {
   $InputInfoCopyWith<$Res> get input;
   @override
   $AiInfoCopyWith<$Res> get ai;
+  @override
+  $CommentInfoCopyWith<$Res>? get comment;
+  @override
+  $CiInfoCopyWith<$Res>? get ci;
 }
 
 /// @nodoc
@@ -900,6 +1392,8 @@ class __$$MetaImplCopyWithImpl<$Res>
     Object? repo = null,
     Object? input = null,
     Object? ai = null,
+    Object? comment = freezed,
+    Object? ci = freezed,
   }) {
     return _then(
       _$MetaImpl(
@@ -927,6 +1421,14 @@ class __$$MetaImplCopyWithImpl<$Res>
             ? _value.ai
             : ai // ignore: cast_nullable_to_non_nullable
                   as AiInfo,
+        comment: freezed == comment
+            ? _value.comment
+            : comment // ignore: cast_nullable_to_non_nullable
+                  as CommentInfo?,
+        ci: freezed == ci
+            ? _value.ci
+            : ci // ignore: cast_nullable_to_non_nullable
+                  as CiInfo?,
       ),
     );
   }
@@ -942,6 +1444,8 @@ class _$MetaImpl implements _Meta {
     @JsonKey(name: 'repo') required this.repo,
     @JsonKey(name: 'input') required this.input,
     @JsonKey(name: 'ai') required this.ai,
+    @JsonKey(name: 'comment') this.comment,
+    @JsonKey(name: 'ci') this.ci,
   });
 
   factory _$MetaImpl.fromJson(Map<String, dynamic> json) =>
@@ -965,10 +1469,16 @@ class _$MetaImpl implements _Meta {
   @override
   @JsonKey(name: 'ai')
   final AiInfo ai;
+  @override
+  @JsonKey(name: 'comment')
+  final CommentInfo? comment;
+  @override
+  @JsonKey(name: 'ci')
+  final CiInfo? ci;
 
   @override
   String toString() {
-    return 'Meta(tool: $tool, runId: $runId, createdAt: $createdAt, repo: $repo, input: $input, ai: $ai)';
+    return 'Meta(tool: $tool, runId: $runId, createdAt: $createdAt, repo: $repo, input: $input, ai: $ai, comment: $comment, ci: $ci)';
   }
 
   @override
@@ -982,13 +1492,24 @@ class _$MetaImpl implements _Meta {
                 other.createdAt == createdAt) &&
             (identical(other.repo, repo) || other.repo == repo) &&
             (identical(other.input, input) || other.input == input) &&
-            (identical(other.ai, ai) || other.ai == ai));
+            (identical(other.ai, ai) || other.ai == ai) &&
+            (identical(other.comment, comment) || other.comment == comment) &&
+            (identical(other.ci, ci) || other.ci == ci));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, tool, runId, createdAt, repo, input, ai);
+  int get hashCode => Object.hash(
+    runtimeType,
+    tool,
+    runId,
+    createdAt,
+    repo,
+    input,
+    ai,
+    comment,
+    ci,
+  );
 
   /// Create a copy of Meta
   /// with the given fields replaced by the non-null parameter values.
@@ -1012,6 +1533,8 @@ abstract class _Meta implements Meta {
     @JsonKey(name: 'repo') required final RepoInfo repo,
     @JsonKey(name: 'input') required final InputInfo input,
     @JsonKey(name: 'ai') required final AiInfo ai,
+    @JsonKey(name: 'comment') final CommentInfo? comment,
+    @JsonKey(name: 'ci') final CiInfo? ci,
   }) = _$MetaImpl;
 
   factory _Meta.fromJson(Map<String, dynamic> json) = _$MetaImpl.fromJson;
@@ -1034,6 +1557,12 @@ abstract class _Meta implements Meta {
   @override
   @JsonKey(name: 'ai')
   AiInfo get ai;
+  @override
+  @JsonKey(name: 'comment')
+  CommentInfo? get comment;
+  @override
+  @JsonKey(name: 'ci')
+  CiInfo? get ci;
 
   /// Create a copy of Meta
   /// with the given fields replaced by the non-null parameter values.

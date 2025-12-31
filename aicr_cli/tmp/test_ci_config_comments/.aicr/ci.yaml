@@ -1,0 +1,4 @@
+# This is a comment
+postComment: true
+commentMode: always_new  # inline comment
+marker: "TEST"
