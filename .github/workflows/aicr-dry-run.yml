@@ -16,6 +16,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Repo debug (show files)
+        run: |
+          echo "PWD=$(pwd)"
+          echo "LS:"
+          ls -la
+          echo "FIND pubspec.yaml (maxdepth 4):"
+          find . -maxdepth 4 -name pubspec.yaml -print
+
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1
 
