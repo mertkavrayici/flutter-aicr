@@ -1,0 +1,3 @@
+postComment: false
+commentMode: update   # update | always_new
+marker: "AICR_COMMENT"
