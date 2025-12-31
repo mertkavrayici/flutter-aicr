@@ -5,40 +5,40 @@ import '../util/aicr_logger.dart';
 import 'comment_poster.dart';
 
 /// HTTP transport function for testing.
-typedef GitHubTransport = Future<GitHubTransportResponse> Function({
-  required Uri uri,
-  required Map<String, String> headers,
-  required String? body,
-  required String method,
-});
+typedef GitHubTransport =
+    Future<GitHubTransportResponse> Function({
+      required Uri uri,
+      required Map<String, String> headers,
+      required String? body,
+      required String method,
+    });
 
 final class GitHubTransportResponse {
   final int statusCode;
   final String body;
 
-  const GitHubTransportResponse({
-    required this.statusCode,
-    required this.body,
-  });
+  const GitHubTransportResponse({required this.statusCode, required this.body});
 }
 
 /// Marker pattern for idempotency.
 /// Format: <!-- AICR_MARKER: <diff_hash> -->
-/// Matches hash like "sha256:abc123" or just "abc123"
-final RegExp _markerPattern = RegExp(r'<!--\s*AICR_MARKER:\s*([^\s<>]+?)\s*-->');
+final RegExp _markerPattern = RegExp(
+  r'<!--\s*AICR_MARKER:\s*([^\s<>]+?)\s*-->',
+);
 
-/// Posts comments to GitHub PRs.
+/// Posts comments to GitHub PRs using Issue Comments API.
 ///
-/// Implements idempotency by:
-/// 1. Searching for existing comments with the diff hash marker
-/// 2. Updating the comment if found
-/// 3. Creating a new comment if not found
+/// Idempotency:
+/// 1) List existing comments on the PR (issue)
+/// 2) Find a comment containing the marker for this diff hash
+/// 3) Update if found, create otherwise
 final class GitHubPoster implements CommentPoster {
-  final GitHubTransport _transport;
   static const String _baseUrl = 'https://api.github.com';
 
+  final GitHubTransport _transport;
+
   GitHubPoster({GitHubTransport? transport})
-      : _transport = transport ?? _defaultTransport;
+    : _transport = transport ?? _defaultTransport;
 
   @override
   Future<CommentPostResult> post({
@@ -51,42 +51,33 @@ final class GitHubPoster implements CommentPoster {
   }) async {
     try {
       final bodyWithMarker = _addMarker(body, diffHash);
-      final headers = {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json',
-        'User-Agent': 'AICR/1.0',
-      };
+      final headers = _buildHeaders(token);
 
-      // 1. List existing comments to find one with matching marker
       final existingCommentId = await _findExistingComment(
         repo: repo,
         prOrMrNumber: prOrMrNumber,
         diffHash: diffHash,
-        token: token,
         headers: headers,
         logger: logger,
       );
 
       if (existingCommentId != null) {
-        // 2. Update existing comment
-        return await _updateComment(
+        return _updateComment(
           repo: repo,
           commentId: existingCommentId,
           body: bodyWithMarker,
           headers: headers,
           logger: logger,
         );
-      } else {
-        // 3. Create new comment
-        return await _createComment(
-          repo: repo,
-          prOrMrNumber: prOrMrNumber,
-          body: bodyWithMarker,
-          headers: headers,
-          logger: logger,
-        );
       }
+
+      return _createComment(
+        repo: repo,
+        prOrMrNumber: prOrMrNumber,
+        body: bodyWithMarker,
+        headers: headers,
+        logger: logger,
+      );
     } catch (e) {
       final error = 'Failed to post GitHub comment: $e';
       logger?.warn(error);
@@ -94,17 +85,34 @@ final class GitHubPoster implements CommentPoster {
     }
   }
 
+  Map<String, String> _buildHeaders(String token) => {
+    // GitHub prefers Bearer for fine-grained tokens and GITHUB_TOKEN
+    'Authorization': 'Bearer $token',
+    'Accept': 'application/vnd.github+json',
+    'User-Agent': 'AICR/1.0',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+
+  Uri _issueCommentsUri({required RepoInfo repo, required int prOrMrNumber}) {
+    return Uri.parse(
+      '$_baseUrl/repos/${repo.owner}/${repo.name}/issues/$prOrMrNumber/comments',
+    );
+  }
+
+  Uri _singleCommentUri({required RepoInfo repo, required int commentId}) {
+    return Uri.parse(
+      '$_baseUrl/repos/${repo.owner}/${repo.name}/issues/comments/$commentId',
+    );
+  }
+
   Future<int?> _findExistingComment({
     required RepoInfo repo,
     required int prOrMrNumber,
     required String diffHash,
-    required String token,
     required Map<String, String> headers,
     AicrLogger? logger,
   }) async {
-    final uri = Uri.parse(
-      '$_baseUrl/repos/${repo.owner}/${repo.name}/issues/$prOrMrNumber/comments',
-    );
+    final uri = _issueCommentsUri(repo: repo, prOrMrNumber: prOrMrNumber);
 
     final response = await _transport(
       uri: uri,
@@ -113,22 +121,36 @@ final class GitHubPoster implements CommentPoster {
       method: 'GET',
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       logger?.warn(
-        'Failed to list GitHub comments: HTTP ${response.statusCode}',
+        'Failed to list GitHub comments: HTTP ${response.statusCode} - ${response.body}',
       );
       return null;
     }
 
-    final comments = jsonDecode(response.body) as List<dynamic>;
-    for (final comment in comments) {
-      final commentMap = comment as Map<String, dynamic>;
-      final commentBody = commentMap['body'] as String? ?? '';
-      final match = _markerPattern.firstMatch(commentBody);
-      if (match != null && match.group(1) == diffHash) {
-        final commentId = commentMap['id'] as int;
-        logger?.info('Found existing comment with marker (id: $commentId)');
-        return commentId;
+    final decoded = jsonDecode(response.body);
+    if (decoded is! List) {
+      logger?.warn(
+        'Failed to list GitHub comments: unexpected JSON type (${decoded.runtimeType})',
+      );
+      return null;
+    }
+
+    for (final item in decoded) {
+      if (item is! Map<String, dynamic>) continue;
+
+      final commentBody = (item['body'] as String?) ?? '';
+      final commentId = item['id'];
+
+      if (commentId is! int) continue;
+
+      // IMPORTANT: Look through all markers in the comment, not just the first.
+      for (final m in _markerPattern.allMatches(commentBody)) {
+        final foundHash = m.group(1);
+        if (foundHash == diffHash) {
+          logger?.info('Found existing comment with marker (id: $commentId)');
+          return commentId;
+        }
       }
     }
 
@@ -142,15 +164,12 @@ final class GitHubPoster implements CommentPoster {
     required Map<String, String> headers,
     AicrLogger? logger,
   }) async {
-    final uri = Uri.parse(
-      '$_baseUrl/repos/${repo.owner}/${repo.name}/issues/$prOrMrNumber/comments',
-    );
+    final uri = _issueCommentsUri(repo: repo, prOrMrNumber: prOrMrNumber);
 
     final payload = jsonEncode({'body': body});
-
     final response = await _transport(
       uri: uri,
-      headers: headers,
+      headers: {...headers, 'Content-Type': 'application/json; charset=utf-8'},
       body: payload,
       method: 'POST',
     );
@@ -158,12 +177,12 @@ final class GitHubPoster implements CommentPoster {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       logger?.info('Created new GitHub comment');
       return const CommentPostSuccess(wasUpdated: false);
-    } else {
-      final error =
-          'Failed to create GitHub comment: HTTP ${response.statusCode} - ${response.body}';
-      logger?.warn(error);
-      return CommentPostFailure(error: error);
     }
+
+    final error =
+        'Failed to create GitHub comment: HTTP ${response.statusCode} - ${response.body}';
+    logger?.warn(error);
+    return CommentPostFailure(error: error);
   }
 
   Future<CommentPostResult> _updateComment({
@@ -173,15 +192,12 @@ final class GitHubPoster implements CommentPoster {
     required Map<String, String> headers,
     AicrLogger? logger,
   }) async {
-    final uri = Uri.parse(
-      '$_baseUrl/repos/${repo.owner}/${repo.name}/issues/comments/$commentId',
-    );
+    final uri = _singleCommentUri(repo: repo, commentId: commentId);
 
     final payload = jsonEncode({'body': body});
-
     final response = await _transport(
       uri: uri,
-      headers: headers,
+      headers: {...headers, 'Content-Type': 'application/json; charset=utf-8'},
       body: payload,
       method: 'PATCH',
     );
@@ -189,15 +205,16 @@ final class GitHubPoster implements CommentPoster {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       logger?.info('Updated existing GitHub comment (id: $commentId)');
       return const CommentPostSuccess(wasUpdated: true);
-    } else {
-      final error =
-          'Failed to update GitHub comment: HTTP ${response.statusCode} - ${response.body}';
-      logger?.warn(error);
-      return CommentPostFailure(error: error);
     }
+
+    final error =
+        'Failed to update GitHub comment: HTTP ${response.statusCode} - ${response.body}';
+    logger?.warn(error);
+    return CommentPostFailure(error: error);
   }
 
   String _addMarker(String body, String diffHash) {
+    // Keep the marker on its own line so it's easy to search and stable across edits.
     return '$body\n\n<!-- AICR_MARKER: $diffHash -->';
   }
 
@@ -209,10 +226,14 @@ final class GitHubPoster implements CommentPoster {
   }) async {
     final client = HttpClient();
     try {
-      final request = await _createRequest(client, uri, method).timeout(
-        const Duration(seconds: 30),
-      );
+      final request = await _createRequest(
+        client,
+        uri,
+        method,
+      ).timeout(const Duration(seconds: 30));
+
       headers.forEach(request.headers.set);
+
       if (body != null) {
         request.write(body);
       }
@@ -220,6 +241,7 @@ final class GitHubPoster implements CommentPoster {
       final response = await request.close().timeout(
         const Duration(seconds: 30),
       );
+
       final responseBody = await response
           .transform(utf8.decoder)
           .join()
@@ -253,4 +275,3 @@ final class GitHubPoster implements CommentPoster {
     }
   }
 }
-

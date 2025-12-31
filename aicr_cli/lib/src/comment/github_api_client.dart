@@ -7,37 +7,22 @@ import 'dart:io';
 /// - Listing PR issue comments
 /// - Creating comments
 /// - Updating comments
-class GitHubApiClient {
+final class GitHubApiClient {
   final HttpClient? _client;
   static const String _baseUrl = 'https://api.github.com';
 
-  /// Creates a GitHubApiClient with optional HTTP client for testing.
   GitHubApiClient({HttpClient? client}) : _client = client;
 
-  /// Lists all comments on an issue/PR.
-  ///
-  /// Returns the response body as JSON-encoded string.
-  /// Throws on network errors or non-2xx status codes.
   Future<String> listIssueComments({
     required String owner,
     required String repo,
     required int issueNumber,
     required String token,
   }) async {
-    final uri = Uri.parse(
-      '$_baseUrl/repos/$owner/$repo/issues/$issueNumber/comments',
-    );
-    return _request(
-      uri: uri,
-      method: 'GET',
-      token: token,
-    );
+    final url = '$_baseUrl/repos/$owner/$repo/issues/$issueNumber/comments';
+    return _request(url: url, method: 'GET', token: token);
   }
 
-  /// Creates a new comment on an issue/PR.
-  ///
-  /// Returns the response body as JSON-encoded string.
-  /// Throws on network errors or non-2xx status codes.
   Future<String> createComment({
     required String owner,
     required String repo,
@@ -45,22 +30,11 @@ class GitHubApiClient {
     required String body,
     required String token,
   }) async {
-    final uri = Uri.parse(
-      '$_baseUrl/repos/$owner/$repo/issues/$issueNumber/comments',
-    );
+    final url = '$_baseUrl/repos/$owner/$repo/issues/$issueNumber/comments';
     final payload = jsonEncode({'body': body});
-    return _request(
-      uri: uri,
-      method: 'POST',
-      token: token,
-      body: payload,
-    );
+    return _request(url: url, method: 'POST', token: token, body: payload);
   }
 
-  /// Updates an existing comment.
-  ///
-  /// Returns the response body as JSON-encoded string.
-  /// Throws on network errors or non-2xx status codes.
   Future<String> updateComment({
     required String owner,
     required String repo,
@@ -68,52 +42,55 @@ class GitHubApiClient {
     required String body,
     required String token,
   }) async {
-    final uri = Uri.parse(
-      '$_baseUrl/repos/$owner/$repo/issues/comments/$commentId',
-    );
+    final url = '$_baseUrl/repos/$owner/$repo/issues/comments/$commentId';
     final payload = jsonEncode({'body': body});
-    return _request(
-      uri: uri,
-      method: 'PATCH',
-      token: token,
-      body: payload,
-    );
+    return _request(url: url, method: 'PATCH', token: token, body: payload);
   }
 
   Future<String> _request({
-    required Uri uri,
+    required String url,
     required String method,
     required String token,
     String? body,
   }) async {
+    // ✅ Fail-fast: JSON payload yanlışlıkla URL diye buraya gelirse bu blok patlatsın.
+    final uri = _safeParseGitHubUrl(url);
+
     final client = _client ?? HttpClient();
     final shouldCloseClient = _client == null;
 
     try {
-      final request = await _createRequest(client, uri, method).timeout(
-        const Duration(seconds: 30),
-      );
+      final request = await _createRequest(
+        client,
+        uri,
+        method,
+      ).timeout(const Duration(seconds: 30));
+
+      // Auth + headers
       request.headers.set('Authorization', 'Bearer $token');
       request.headers.set('Accept', 'application/vnd.github+json');
-      request.headers.set('Content-Type', 'application/json');
       request.headers.set('User-Agent', 'AICR/1.0');
       request.headers.set('X-GitHub-Api-Version', '2022-11-28');
 
+      // Only set content-type when sending a body
       if (body != null) {
+        request.headers.set('Content-Type', 'application/json; charset=utf-8');
         request.write(body);
       }
 
       final response = await request.close().timeout(
         const Duration(seconds: 30),
       );
+
       final responseBody = await response
           .transform(utf8.decoder)
           .join()
           .timeout(const Duration(seconds: 30));
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        // ✅ Daha okunaklı hata
         throw HttpException(
-          'HTTP ${response.statusCode}: $responseBody',
+          'GitHub API failed: HTTP ${response.statusCode} for $method $uri\n$responseBody',
           uri: uri,
         );
       }
@@ -124,6 +101,24 @@ class GitHubApiClient {
         client.close(force: true);
       }
     }
+  }
+
+  static Uri _safeParseGitHubUrl(String url) {
+    // URL değilse (örn JSON string geldiyse) burada net patlasın:
+    // "Contains invalid characters" gibi belirsiz hata yerine açıklama.
+    if (!url.startsWith(_baseUrl)) {
+      throw ArgumentError(
+        'GitHubApiClient expected a GitHub API URL starting with "$_baseUrl", got: $url',
+      );
+    }
+
+    final uri = Uri.parse(url);
+
+    if (uri.scheme != 'https' || uri.host.isEmpty) {
+      throw ArgumentError('Invalid GitHub API URL: $url');
+    }
+
+    return uri;
   }
 
   static Future<HttpClientRequest> _createRequest(
@@ -143,4 +138,3 @@ class GitHubApiClient {
     }
   }
 }
-
