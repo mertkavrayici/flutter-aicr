@@ -77,7 +77,6 @@ jobs:
           fi
           
           dart run bin/aicr_cli.dart \
-            --repo "$REPO_NAME" \
             --repo-path "${{ github.workspace }}" \
             --mode git_name_status \
             --range "${{ steps.git-range.outputs.range }}" \
