@@ -1,0 +1,3 @@
+postComment: true
+commentMode: "update"
+marker: 'CUSTOM_MARKER'

@@ -8,6 +8,7 @@ part 'layer_violation/layer_violation_evidence_formatter.dart';
 
 /// Architecture: Katman ihlali (heuristic)
 /// - presentation -> data/domain import görürsek WARN.
+///   - Not: presentation -> domain entities/value objects gibi saf tipler ALLOWED (warn etme).
 /// - core -> feature import görürsek WARN.
 /// - Allowlist/denylist desteği (hardcode, sonra config yapılır).
 /// - Sadece diff'te eklenen import satırlarını tarar.
@@ -68,7 +69,7 @@ final class LayerViolationRule implements AicrRule {
     final policy =
         _policyOverride ??
         LayerViolationPolicy(allowlist: _allowlist, denylist: _denylist);
-    final hits = policy.evaluate(_LayerViolationDiffScanner().scan(text));
+    final hits = policy._evaluate(_LayerViolationDiffScanner().scan(text));
 
     if (hits.isEmpty) {
       return RuleResult.pass(
@@ -80,8 +81,10 @@ final class LayerViolationRule implements AicrRule {
     }
 
     final violationTypes = hits.map((h) => h.violationType).toSet();
-    final violationDescription =
-        _LayerViolationMessageBuilder().build(violationTypes, hits: hits);
+    final violationDescription = _LayerViolationMessageBuilder().build(
+      violationTypes,
+      hits: hits,
+    );
     final evidence = _LayerViolationEvidenceFormatter().format(hits);
 
     return RuleResult(
@@ -97,5 +100,4 @@ final class LayerViolationRule implements AicrRule {
                 .toList(growable: false),
     );
   }
-
 }

@@ -11,3 +11,4 @@ extension AicrReportExtensions on AicrReport {
   String toMarkdown({bool includeLegacyRules = false}) =>
       AicrMarkdownRenderer(includeLegacyRules: includeLegacyRules).render(this);
 }
+

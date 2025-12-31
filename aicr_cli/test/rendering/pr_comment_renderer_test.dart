@@ -25,7 +25,7 @@ void main() {
       expect(md, contains('**Files:** 2'));
     });
 
-    test('renders Optional when only AI findings exist', () {
+    test('no deterministic warn/fail but AI finding exists -> Optional', () {
       final report = _makeReport(
         status: 'pass',
         pass: 6,
@@ -40,6 +40,7 @@ void main() {
             messageTr: 'TR',
             messageEn: 'EN',
             sourceId: 'ai_fake',
+            source: AicrFindingSource.ai,
             confidence: 0.62,
           ),
         ],
@@ -51,7 +52,7 @@ void main() {
 
       expect(md, contains('🟦 **Optional**'));
       expect(md, contains('Top actions'));
-      expect(md, contains('(AI, 62%)'));
+      expect(md, contains('[ai,62%]'));
     });
 
     test('renders upper block with Repo, Run id, Files, AI, Diff hash', () {
@@ -70,7 +71,7 @@ void main() {
       expect(md, contains('**Repo:** flutter-aicr'));
       expect(md, contains('**Run:** aicr_123456789')); // Shortened to 14 chars
       expect(md, contains('**Files:** 5'));
-      expect(md, contains('**AI:** ON'));
+      expect(md, contains('**AI:** ON (mode:'));
       expect(md, contains('**Diff:**'));
     });
 
@@ -89,10 +90,12 @@ void main() {
             messageTr: 'TR',
             messageEn: 'EN',
             sourceId: 'ai_fake',
+            source: AicrFindingSource.ai,
             confidence: 0.75,
           ),
         ],
         aiEnabled: true,
+        aiMode: 'fake',
         fileCount: 1,
       );
 
@@ -100,10 +103,10 @@ void main() {
 
       expect(md, contains('**Risk level:**'));
       expect(md, contains('**Overall confidence:**'));
-      expect(md, contains('75%')); // Overall confidence
+      expect(md, contains('90%')); // Overall confidence: 85%*100 + 15%*30
     });
 
-    test('renders Required when FAIL detected', () {
+    test('FAIL present -> Recommended', () {
       final report = _makeReport(
         status: 'fail',
         pass: 4,
@@ -116,11 +119,11 @@ void main() {
 
       final md = PrCommentRenderer().render(report, locale: 'en');
 
-      expect(md, contains('🟥 **Required**'));
-      expect(md, contains('failing rules detected'));
+      expect(md, contains('🟨 **Recommended**'));
+      expect(md, contains('deterministic signals detected'));
     });
 
-    test('renders Recommended when WARN with high severity', () {
+    test('WARN present -> Recommended', () {
       final report = _makeReport(
         status: 'warn',
         pass: 4,
@@ -144,11 +147,10 @@ void main() {
       final md = PrCommentRenderer().render(report, locale: 'en');
 
       expect(md, contains('🟨 **Recommended**'));
-      expect(md, contains('high severity.'));
-      expect(md, isNot(contains('high severity or confidence')));
+      expect(md, contains('deterministic signals detected'));
     });
 
-    test('renders Recommended when WARN with high confidence', () {
+    test('WARN present -> Recommended (regardless of AI)', () {
       final report = _makeReport(
         status: 'warn',
         pass: 4,
@@ -163,6 +165,7 @@ void main() {
             messageTr: 'TR',
             messageEn: 'EN',
             sourceId: 'ai_fake',
+            source: AicrFindingSource.ai,
             confidence: 0.85,
           ),
         ],
@@ -173,7 +176,7 @@ void main() {
       final md = PrCommentRenderer().render(report, locale: 'en');
 
       expect(md, contains('🟨 **Recommended**'));
-      expect(md, contains('high confidence.'));
+      expect(md, isNot(contains('high confidence')));
     });
 
     test('AI OFF: does not reference confidence in recommendation text', () {
@@ -199,22 +202,39 @@ void main() {
 
       final md = PrCommentRenderer().render(report, locale: 'en');
 
-      // We still show Overall confidence as N/A, but should not use confidence as a decision criterion.
-      expect(md, contains('**Overall confidence:** N/A'));
+      // Overall confidence should never be N/A.
+      expect(md, contains('**Overall confidence:** 94%'));
+      // And decision text must not use AI/confidence to escalate.
       expect(md, isNot(contains('high severity or confidence')));
       expect(md, isNot(contains('high confidence')));
 
-      final confidenceMentions = RegExp('confidence', caseSensitive: false)
-          .allMatches(md)
-          .length;
+      final confidenceMentions = RegExp(
+        'confidence',
+        caseSensitive: false,
+      ).allMatches(md).length;
       expect(confidenceMentions, 1);
     });
 
-    test('renders Optional when low-severity WARN', () {
+    test('warn present -> recommended (explicit unit test)', () {
       final report = _makeReport(
         status: 'warn',
-        pass: 4,
+        pass: 3,
         warn: 1,
+        fail: 0,
+        findings: const [],
+        aiEnabled: false,
+        fileCount: 1,
+      );
+
+      final md = PrCommentRenderer().render(report, locale: 'en');
+      expect(md, contains('🟨 **Recommended**'));
+    });
+
+    test('only suggestions -> Not needed', () {
+      final report = _makeReport(
+        status: 'pass',
+        pass: 5,
+        warn: 0,
         fail: 0,
         findings: const [
           AicrFinding(
@@ -234,8 +254,7 @@ void main() {
 
       final md = PrCommentRenderer().render(report, locale: 'en');
 
-      expect(md, contains('🟦 **Optional**'));
-      expect(md, contains('low-severity warnings'));
+      expect(md, contains('🟩 **Not needed**'));
     });
 
     test('Top actions uses uniqueness (same stable key only once)', () {
@@ -254,6 +273,7 @@ void main() {
             messageTr: 'TR',
             messageEn: 'EN',
             sourceId: 'ai_fake',
+            source: AicrFindingSource.ai,
             confidence: 0.8,
             area: 'security',
           ),
@@ -265,6 +285,7 @@ void main() {
             messageTr: 'TR2',
             messageEn: 'EN2',
             sourceId: 'ai_fake2',
+            source: AicrFindingSource.ai,
             confidence: 0.7,
             area: 'security', // Same area
           ),
@@ -277,6 +298,7 @@ void main() {
             messageTr: 'TR3',
             messageEn: 'EN3',
             sourceId: 'ai_fake3',
+            source: AicrFindingSource.ai,
             confidence: 0.9,
             area: 'performance',
           ),
@@ -353,8 +375,13 @@ void main() {
       final topActionsIndex = md.indexOf('### Top actions');
       final allFindingsIndex = md.indexOf('### All findings');
       if (topActionsIndex != -1 && allFindingsIndex != -1) {
-        final topActionsSection = md.substring(topActionsIndex, allFindingsIndex);
-        final count = 'Avoid hardcoded secrets'.allMatches(topActionsSection).length;
+        final topActionsSection = md.substring(
+          topActionsIndex,
+          allFindingsIndex,
+        );
+        final count = 'Avoid hardcoded secrets'
+            .allMatches(topActionsSection)
+            .length;
         expect(count, 1);
       }
     });
@@ -375,6 +402,7 @@ void main() {
             messageTr: 'TR',
             messageEn: 'EN',
             sourceId: 'ai_fake',
+            source: AicrFindingSource.ai,
             confidence: 0.9,
             area: 'test1',
           ),
@@ -387,6 +415,7 @@ void main() {
             messageTr: 'TR2',
             messageEn: 'EN2',
             sourceId: 'ai_fake2',
+            source: AicrFindingSource.ai,
             confidence: 0.5,
             area: 'test2',
           ),
@@ -419,6 +448,7 @@ AicrReport _makeReport({
   required int fail,
   required List<AicrFinding> findings,
   required bool aiEnabled,
+  String aiMode = 'noop',
   required int fileCount,
 }) {
   final meta = Meta.fromFlat(
@@ -427,6 +457,7 @@ AicrReport _makeReport({
     createdAt: '2025-01-01T00:00:00.000Z',
     repoName: 'flutter-aicr',
     aiEnabled: aiEnabled,
+    aiMode: aiMode,
     diffHash: 'sha256:abc',
     fileCount: fileCount,
   );

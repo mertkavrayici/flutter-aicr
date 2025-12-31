@@ -12,12 +12,10 @@ final class LayerViolationPolicy {
   final List<String> allowlist;
   final List<String> denylist;
 
-  const LayerViolationPolicy({
-    required this.allowlist,
-    required this.denylist,
-  });
+  const LayerViolationPolicy({required this.allowlist, required this.denylist});
 
-  List<_LayerHit> evaluate(List<_AddedImport> imports) {
+  // Library-private to avoid exposing private implementation types.
+  List<_LayerHit> _evaluate(List<_AddedImport> imports) {
     final hits = <_LayerHit>[];
     for (final imp in imports) {
       final importLower = imp.importPath.toLowerCase();
@@ -56,6 +54,11 @@ final class LayerViolationPolicy {
           continue;
         }
         if (_importsDomainLayer(importLower)) {
+          // Presentation -> domain is generally allowed for entities/value objects,
+          // but not for domain implementation details.
+          if (_isAllowedPresentationToDomainImport(importLower)) {
+            continue;
+          }
           hits.add(
             _LayerHit(
               filePath: imp.filePath,
@@ -122,6 +125,27 @@ final class LayerViolationPolicy {
       importPath.contains('\\domain\\') ||
       importPath.contains('\\domain');
 
+  bool _isAllowedPresentationToDomainImport(String importPath) {
+    final p = importPath.toLowerCase();
+
+    // Heuristic allowlist for "domain entities / value objects / pure types".
+    // We keep it intentionally small and path-based.
+    if (p.contains('/domain/entities/') || p.contains('\\domain\\entities\\')) {
+      return true;
+    }
+    if (p.contains('/domain/value_objects/') ||
+        p.contains('\\domain\\value_objects\\')) {
+      return true;
+    }
+    // File naming conventions commonly used for pure domain types.
+    if (p.endsWith('_entity.dart') || p.endsWith('entity.dart')) return true;
+    if (p.endsWith('_value_object.dart') || p.endsWith('value_object.dart')) {
+      return true;
+    }
+
+    return false;
+  }
+
   bool _importsFeatureLayer(String importPath) =>
       importPath.contains('/features/') ||
       importPath.contains('/feature/') ||
@@ -130,5 +154,3 @@ final class LayerViolationPolicy {
       importPath.contains('.features.') ||
       importPath.contains('.feature.');
 }
-
-

@@ -1,0 +1,209 @@
+{
+  "meta": {
+    "tool": {
+      "name": "AICR",
+      "version": "0.1.0"
+    },
+    "run_id": "aicr_1767169457044",
+    "created_at": "2025-12-31T11:24:17.038740",
+    "repo": {
+      "name": "repo"
+    },
+    "input": {
+      "diff_type": "git_diff",
+      "diff_hash": "sha256:16ef60239e1a6c4d5dd6cb11f6233c4eb9c3afeb12ce6f5e1b10c5505588f418",
+      "file_count": 1
+    },
+    "ai": {
+      "enabled": true,
+      "mode": "fake"
+    },
+    "comment": {
+      "post_comment": false,
+      "comment_mode": "update",
+      "marker": "AICR_COMMENT"
+    },
+    "ci": {
+      "post_comment": false,
+      "comment_mode": "update",
+      "marker": "AICR_COMMENT"
+    }
+  },
+  "summary": {
+    "status": "warn",
+    "rule_results": {
+      "pass": 8,
+      "warn": 1,
+      "fail": 0
+    },
+    "contract_results": {
+      "pass": 0,
+      "warn": 0,
+      "fail": 0
+    },
+    "file_findings": {
+      "info": 0,
+      "warn": 0,
+      "error": 0
+    }
+  },
+  "rules": [
+    {
+      "rule_id": "bloc_change_requires_tests",
+      "status": "pass",
+      "title": "BLoC changes should include tests",
+      "message": {
+        "tr": "BLoC ile ilgili değişiklik tespit edilmedi.",
+        "en": "No BLoC-related change detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "secret_or_env_exposure",
+      "status": "pass",
+      "title": "Potential secret/env exposure in diff",
+      "message": {
+        "tr": "Secret/env sızıntısı tespit edilmedi.",
+        "en": "No secret/env exposure detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "diff_secret_patterns",
+      "status": "warn",
+      "title": "Potential secret patterns detected in diff",
+      "message": {
+        "tr": "Diff içinde `.env`/token/apiKey/secret benzeri ifadeler bulundu. Hardcode credential olmadığını ve loglara sızmadığını doğrula.",
+        "en": "Diff contains `.env`/token/apiKey/secret-like patterns. Verify nothing is hardcoded and nothing leaks to logs."
+      },
+      "evidence": [
+        {
+          "file_path": "lib/a.dart"
+        }
+      ]
+    },
+    {
+      "rule_id": "high_entropy_secret",
+      "status": "pass",
+      "title": "High-entropy secret/token pattern detected",
+      "message": {
+        "tr": "High-entropy secret/token pattern tespit edilmedi.",
+        "en": "No high-entropy secret/token pattern detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "large_change_set",
+      "status": "pass",
+      "title": "Large change set might be hard to review",
+      "message": {
+        "tr": "Değişen dosya sayısı makul görünüyor.",
+        "en": "Changed file count looks reasonable."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "ui_change_suggests_golden_tests",
+      "status": "pass",
+      "title": "UI changes may benefit from golden tests",
+      "message": {
+        "tr": "UI ile ilgili değişiklik tespit edilmedi.",
+        "en": "No UI-related changes detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "layer_violation",
+      "status": "pass",
+      "title": "Possible architecture layer violation",
+      "message": {
+        "tr": "Katman ihlali şüphesi tespit edilmedi.",
+        "en": "No layer violation suspicion detected."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "large_diff_suggests_split",
+      "status": "pass",
+      "title": "Large diff might be risky to review/performance",
+      "message": {
+        "tr": "Diff boyutu makul görünüyor.",
+        "en": "Diff size looks reasonable."
+      },
+      "evidence": []
+    },
+    {
+      "rule_id": "public_api_change_requires_docs",
+      "status": "pass",
+      "title": "Public API change may require docs/changelog update",
+      "message": {
+        "tr": "Public API değişikliği şüphesi yok.",
+        "en": "No public API change suspicion."
+      },
+      "evidence": []
+    }
+  ],
+  "findings": [
+    {
+      "id": "diff_secret_patterns:1fb47fd908a2",
+      "category": "security",
+      "severity": "warning",
+      "title": "Potential secret patterns detected in diff",
+      "message": {
+        "tr": "Diff içinde `.env`/token/apiKey/secret benzeri ifadeler bulundu. Hardcode credential olmadığını ve loglara sızmadığını doğrula.",
+        "en": "Diff contains `.env`/token/apiKey/secret-like patterns. Verify nothing is hardcoded and nothing leaks to logs."
+      },
+      "file_path": "lib/a.dart",
+      "source_id": "diff_secret_patterns"
+    },
+    {
+      "id": "ai:4fe6ac99c801",
+      "category": "security",
+      "severity": "warning",
+      "title": "Possible secret exposure",
+      "message": {
+        "tr": "Diff içinde `.env`/secret/apiKey/token benzeri pattern’ler var. Hardcode edilmiş credential olmadığını ve loglara sızmadığını doğrula.",
+        "en": "Diff contains `.env`/secret/apiKey/token-like patterns. Verify nothing is hardcoded and nothing leaks to logs."
+      },
+      "file_path": "lib/a.dart",
+      "source_id": "ai_fake",
+      "source": "ai",
+      "confidence": 0.72
+    }
+  ],
+  "contracts": [],
+  "files": [
+    {
+      "path": "lib/a.dart",
+      "change_type": "modified"
+    }
+  ],
+  "recommendations": [],
+  "ai_review": {
+    "status": "generated",
+    "language": "en",
+    "summary": "There are some warnings to review.",
+    "highlights": [
+      {
+        "severity": "warn",
+        "title": "Potential secret patterns detected in diff",
+        "detail": "Diff contains `.env`/token/apiKey/secret-like patterns. Verify nothing is hardcoded and nothing leaks to logs.",
+        "rule_id": "diff_secret_patterns",
+        "area": null,
+        "risk": null,
+        "reason": null,
+        "suggested_action": null,
+        "confidence": null
+      }
+    ],
+    "suggested_actions": [
+      {
+        "priority": "p1",
+        "action": "Apply fixes by following rule evidence in the report."
+      }
+    ],
+    "limitations": [
+      "MVP deterministic mode (no LLM)."
+    ]
+  }
+}

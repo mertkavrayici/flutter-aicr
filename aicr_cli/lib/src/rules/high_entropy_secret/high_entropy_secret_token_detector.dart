@@ -169,5 +169,3 @@ final class _TokenDetector {
     return out;
   }
 }
-
-

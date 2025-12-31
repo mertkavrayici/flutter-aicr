@@ -1,0 +1,10 @@
+projectName: Budgetment
+architecture: Clean-ish (feature-first)
+stateManagement: bloc
+routing: go_router
+models: freezed/json_serializable
+testing: unit + widget
+language: en
+forbiddenImports:
+  - "package:budgetment/features/transactions/* from core"
+  - "dart:io in UI"

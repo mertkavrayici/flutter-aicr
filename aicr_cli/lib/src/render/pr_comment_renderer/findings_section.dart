@@ -25,9 +25,9 @@ final class FindingsSection {
         ..sort((a, b) => sevRank(b.severity).compareTo(sevRank(a.severity)));
 
       for (final f in items) {
-        final tag = isAi(f) ? ' (AI${confTag(f)})' : '';
+        final tag = isAi(f) ? '[ai${confTag(f)}]' : '[det]';
         md.bullet(
-          '`${f.severity.name}` **${f.title}**$tag — ${msg(f, locale)}',
+          '`${f.severity.name}` **${f.title}** $tag — ${msg(f, locale)}',
         );
       }
       md.nl();
@@ -44,5 +44,3 @@ Map<AicrCategory, List<AicrFinding>> _groupByCategory(
   }
   return m;
 }
-
-

@@ -11,5 +11,3 @@ final class ReviewDecisionSection {
     md.p(decisionText);
   }
 }
-
-

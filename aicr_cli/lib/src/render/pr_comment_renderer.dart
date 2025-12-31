@@ -64,10 +64,10 @@ final class PrCommentRenderer {
 
   int _aiCount(AicrReport report) => report.findings.where(_isAi).length;
 
-  bool _isAi(AicrFinding f) => (f.sourceId ?? '').startsWith('ai');
+  bool _isAi(AicrFinding f) => f.source == AicrFindingSource.ai;
 
   String _conf(AicrFinding f) =>
-      f.confidence == null ? '' : ', ${(f.confidence! * 100).round()}%';
+      f.confidence == null ? '' : ',${(f.confidence! * 100).round()}%';
 
   String _msg(AicrFinding f, String locale) =>
       locale == 'tr' ? f.messageTr : f.messageEn;
@@ -79,21 +79,17 @@ final class PrCommentRenderer {
     AicrSeverity.info => 1,
   };
 
-  _RiskLevelCalculator _risk() =>
-      _RiskLevelCalculator(sevRank: _sevRank);
+  _RiskLevelCalculator _risk() => _RiskLevelCalculator(sevRank: _sevRank);
 
-  _OverallConfidenceHelper _confidence() => _OverallConfidenceHelper(
-        isAi: _isAi,
-        sevRank: _sevRank,
-      );
+  _OverallConfidenceHelper _confidence() =>
+      _OverallConfidenceHelper(isAi: _isAi, sevRank: _sevRank);
 
   _ReviewDecisionBuilder _decision() => _ReviewDecisionBuilder(
-        aiCount: _aiCount,
-        confidence: _confidence(),
-      );
+    aiCount: _aiCount,
+    confidence: _confidence(),
+    isAi: _isAi,
+  );
 
-  _TopActionsSelector _topActions() => _TopActionsSelector(
-        isAi: _isAi,
-        sevRank: _sevRank,
-      );
+  _TopActionsSelector _topActions() =>
+      _TopActionsSelector(isAi: _isAi, sevRank: _sevRank);
 }

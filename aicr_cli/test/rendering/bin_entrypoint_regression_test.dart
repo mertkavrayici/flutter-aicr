@@ -24,6 +24,7 @@ void main() {
     expect(md, contains('## AICR — PASS'));
     expect(md, contains('**Repo:** budgetment'));
     expect(md, contains('**Files:** 7'));
+    expect(md, contains('**AI:** OFF (mode: noop)'));
     expect(md, contains('🟩 **Not needed**'));
     expect(md, contains('No findings ✅'));
   });
@@ -43,19 +44,22 @@ void main() {
           messageTr: 'TR',
           messageEn: 'EN',
           sourceId: 'ai_fake',
+          source: AicrFindingSource.ai,
           confidence: 0.62,
         ),
       ],
       aiEnabled: true,
+      aiMode: 'fake',
       fileCount: 1,
       repoName: 'budgetment',
     );
 
     final md = PrCommentRenderer().render(report, locale: 'en');
 
+    expect(md, contains('**AI:** ON (mode: fake)'));
     expect(md, contains('🟦 **Optional**'));
     expect(md, contains('Top actions'));
-    expect(md, contains('(AI, 62%)'));
+    expect(md, contains('[ai,62%]'));
     expect(md, contains('Docs/Changelog gözden geçir'));
   });
 }
@@ -67,6 +71,7 @@ AicrReport _makeReport({
   required int fail,
   required List<AicrFinding> findings,
   required bool aiEnabled,
+  String aiMode = 'noop',
   required int fileCount,
   required String repoName,
 }) {
@@ -76,6 +81,7 @@ AicrReport _makeReport({
     createdAt: '2025-01-01T00:00:00.000Z',
     repoName: repoName,
     aiEnabled: aiEnabled,
+    aiMode: aiMode,
     diffHash: 'sha256:abc',
     fileCount: fileCount,
   );

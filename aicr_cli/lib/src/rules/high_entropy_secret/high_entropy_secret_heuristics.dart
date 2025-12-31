@@ -70,5 +70,3 @@ final class SecretHeuristics {
     return entropyRatio > _highEntropyRatio;
   }
 }
-
-

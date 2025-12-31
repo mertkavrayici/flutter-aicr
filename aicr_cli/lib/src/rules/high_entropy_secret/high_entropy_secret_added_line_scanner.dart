@@ -98,5 +98,3 @@ final class _AddedLineScanner {
     return out;
   }
 }
-
-

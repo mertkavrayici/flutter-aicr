@@ -1,0 +1,3 @@
+postComment: true
+commentMode: always_new
+marker: "CONFIG_MARKER"

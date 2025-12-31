@@ -66,5 +66,3 @@ final class _Snippet {
     return truncate(snippet, maxLen: maxLen);
   }
 }
-
-
